@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактор игры: Одень персонажа</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #fdf5e6; color: #333; }
+        .container { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; }
+        .panel { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex: 1; }
+        h1, h2 { color: #d2691e; margin-top: 0; }
+        
+        /* Стили редактора */
+        .form-group { margin-bottom: 15px; }
+        input[type="text"], select { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
+        button { background: #8fbc8f; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; margin-top: 10px; }
+        button:hover { background: #2e8b57; }
+        .btn-export { background: #d2691e; font-size: 18px; width: 100%; margin-bottom: 20px; }
+        
+        .item-list { margin-top: 20px; border-top: 2px dashed #ccc; padding-top: 20px; }
+        .item-row { display: flex; align-items: center; gap: 10px; background: #f9f9f9; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
+        .item-row img { width: 40px; height: 40px; object-fit: contain; }
+
+        /* Стили предпросмотра (как в игре) */
+        .game-layout { display: flex; gap: 20px; height: 500px; background: #ffe4b5; padding: 20px; border-radius: 15px; position: relative;}
+        .character-stage { flex: 1; position: relative; background: #fff; border-radius: 10px; display: flex; justify-content: center; align-items: flex-end; overflow: hidden;}
+        .character-stage img { position: absolute; max-width: 100%; max-height: 100%; bottom: 0; object-fit: contain; pointer-events: none; }
+        
+        .inventory { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-content: start; background: rgba(255,255,255,0.5); padding: 15px; border-radius: 10px; overflow-y: auto;}
+        .inv-item { background: white; border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.1s; }
+        .inv-item:hover { transform: scale(1.05); border: 2px solid #8fbc8f; }
+        .inv-item img { width: 100%; height: 80px; object-fit: contain; }
+        
+        .reset-btn { position: absolute; top: 10px; left: 10px; background: #ff6b6b; z-index: 10;}
+
+        /* Модальное окно задания */
+        #taskModal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; border-radius: 15px;}
+        .modal-content { background: white; padding: 30px; border-radius: 15px; text-align: center; max-width: 400px; width: 100%; }
+        .options-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .options-grid button { background: #f0f8ff; color: #333; border: 1px solid #ccc; }
+        .options-grid button:hover { background: #add8e6; }
+    </style>
+</head>
+<body>
+
+    <button class="btn-export" onclick="exportGame()">💾 Скачать готовую игру (HTML)</button>
+
+    <div class="container">
+        <!-- ПАНЕЛЬ РЕДАКТОРА -->
+        <div class="panel">
+            <h2>Настройки игры</h2>
+            
+            <div class="form-group">
+                <label><b>1. Загрузите базу персонажа (PNG):</b></label><br>
+                <input type="file" id="baseCharInput" accept="image/png, image/jpeg" onchange="loadBaseChar(event)">
+            </div>
+
+            <hr>
+            <h3>Добавить одежду с заданием</h3>
+            
+            <div class="form-group">
+                <label>Картинка одежды (PNG с прозрачным фоном):</label>
+                <input type="file" id="itemImgInput" accept="image/png">
+            </div>
+            
+            <div class="form-group">
+                <label>Категория (чтобы заменять, напр: Голова, Тело, Ноги):</label>
+                <input type="text" id="itemCategory" placeholder="Например: hat">
+            </div>
+
+            <div class="form-group">
+                <label>Тип задания:</label>
+                <select id="taskType" onchange="toggleTaskInputs()">
+                    <option value="input">Ввод текста</option>
+                    <option value="choice">Выбор варианта</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Текст вопроса:</label>
+                <input type="text" id="taskQuestion" placeholder="Например: Сколько будет 2+2?">
+            </div>
+
+            <div class="form-group" id="ansInputDiv">
+                <label>Правильный ответ:</label>
+                <input type="text" id="taskAnswer" placeholder="Например: 4">
+            </div>
+
+            <div class="form-group" id="ansChoiceDiv" style="display: none;">
+                <label>Варианты ответов (через запятую):</label>
+                <input type="text" id="taskOptions" placeholder="Например: 3, 4, 5">
+                <label>Правильный ответ (должен точно совпадать с одним из вариантов):</label>
+                <input type="text" id="taskCorrectChoice" placeholder="Например: 4">
+            </div>
+
+            <button onclick="addItem()">➕ Добавить вещь</button>
+
+            <div class="item-list" id="editorItemsList">
+                <!-- Список добавленных вещей -->
+            </div>
+        </div>
+
+        <!-- ПАНЕЛЬ ПРЕДПРОСМОТРА -->
+        <div class="panel">
+            <h2>Окно предпросмотра</h2>
+            <div class="game-layout">
+                <button class="reset-btn" onclick="resetClothes()">Сбросить одежду</button>
+                
+                <div class="character-stage" id="stage">
+                    <img id="baseCharPreview" src="" alt="Персонаж">
+                    <!-- Здесь будут слои одежды -->
+                </div>
+
+                <div class="inventory" id="inventory">
+                    <!-- Кнопки инвентаря -->
+                </div>
+
+                <!-- Окно задания в предпросмотре -->
+                <div id="taskModal">
+                    <div class="modal-content">
+                        <h3 id="modalQuestion">Вопрос?</h3>
+                        <div id="modalBody"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // --- ДАННЫЕ ИГРЫ ---
+    let gameData = {
+        baseCharBase64: "",
+        items: []
+    };
+
+    let equipped = {}; // Хранит надетые вещи { "категория": ID_вещи }
+    let currentAttemptItem = null; // Какую вещь пытаемся надеть
+
+    // --- ФУНКЦИИ РЕДАКТОРА ---
+
+    // Конвертация файла в Base64
+    function toBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    async function loadBaseChar(event) {
+        const file = event.target.files[0];
+        if (file) {
+            gameData.baseCharBase64 = await toBase64(file);
+            document.getElementById('baseCharPreview').src = gameData.baseCharBase64;
+        }
+    }
+
+    function toggleTaskInputs() {
+        const type = document.getElementById('taskType').value;
+        document.getElementById('ansInputDiv').style.display = type === 'input' ? 'block' : 'none';
+        document.getElementById('ansChoiceDiv').style.display = type === 'choice' ? 'block' : 'none';
+    }
+
+    async function addItem() {
+        const imgInput = document.getElementById('itemImgInput');
+        if (!imgInput.files[0]) return alert("Выберите картинку вещи!");
+
+        const base64 = await toBase64(imgInput.files[0]);
+        const type = document.getElementById('taskType').value;
+        
+        let item = {
+            id: Date.now().toString(),
+            category: document.getElementById('itemCategory').value || 'none',
+            image: base64,
+            taskType: type,
+            question: document.getElementById('taskQuestion').value
+        };
+
+        if (type === 'input') {
+            item.answer = document.getElementById('taskAnswer').value.trim();
+        } else {
+            item.options = document.getElementById('taskOptions').value.split(',').map(s => s.trim());
+            item.answer = document.getElementById('taskCorrectChoice').value.trim();
+        }
+
+        gameData.items.push(item);
+        
+        // Очистка полей
+        imgInput.value = "";
+        document.getElementById('taskQuestion').value = "";
+        document.getElementById('taskAnswer').value = "";
+        document.getElementById('taskOptions').value = "";
+        document.getElementById('taskCorrectChoice').value = "";
+
+        updateEditorList();
+        updateInventoryPreview();
+    }
+
+    function updateEditorList() {
+        const list = document.getElementById('editorItemsList');
+        list.innerHTML = gameData.items.map(item => `
+            <div class="item-row">
+                <img src="${item.image}">
+                <span>${item.category} | ${item.question}</span>
+            </div>
+        `).join('');
+    }
+
+    // --- ФУНКЦИИ ИГРЫ (ПРЕДПРОСМОТР) ---
+
+    function updateInventoryPreview() {
+        const inv = document.getElementById('inventory');
+        inv.innerHTML = gameData.items.map(item => `
+            <div class="inv-item" onclick="startTask('${item.id}')">
+                <img src="${item.image}">
+            </div>
+        `).join('');
+    }
+
+    function startTask(itemId) {
+        currentAttemptItem = gameData.items.find(i => i.id === itemId);
+        const modal = document.getElementById('taskModal');
+        const qTitle = document.getElementById('modalQuestion');
+        const mBody = document.getElementById('modalBody');
+
+        qTitle.textContent = currentAttemptItem.question;
+        mBody.innerHTML = '';
+
+        if (currentAttemptItem.taskType === 'input') {
+            mBody.innerHTML = `
+                <input type="text" id="playerAnswer" placeholder="Ваш ответ" style="width: 80%; padding: 10px; margin-bottom: 15px;">
+                <br>
+                <button onclick="checkAnswer('input')">Ответить</button>
+            `;
+        } else {
+            const btns = currentAttemptItem.options.map(opt => 
+                `<button onclick="checkAnswer('choice', '${opt}')">${opt}</button>`
+            ).join('');
+            mBody.innerHTML = `<div class="options-grid">${btns}</div>`;
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    function checkAnswer(type, choiceAns = '') {
+        let playerAns = '';
+        if (type === 'input') {
+            playerAns = document.getElementById('playerAnswer').value.trim();
+        } else {
+            playerAns = choiceAns;
+        }
+
+        if (playerAns.toLowerCase() === currentAttemptItem.answer.toLowerCase()) {
+            alert('Правильно!');
+            equipItem(currentAttemptItem);
+            closeModal();
+        } else {
+            alert('Неправильно, попробуй еще раз!');
+        }
+    }
+
+    function equipItem(item) {
+        // Заменяем вещь в категории (swap механика)
+        equipped[item.category] = item;
+        renderCharacter();
+    }
+
+    function renderCharacter() {
+        // Удаляем старые слои одежды
+        document.querySelectorAll('.clothes-layer').forEach(el => el.remove());
+        
+        const stage = document.getElementById('stage');
+        
+        // Добавляем надетые вещи поверх базы
+        Object.values(equipped).forEach(item => {
+            const img = document.createElement('img');
+            img.src = item.image;
+            img.className = 'clothes-layer';
+            img.style.zIndex = "5"; // Выше персонажа
+            stage.appendChild(img);
+        });
+    }
+
+    function resetClothes() {
+        equipped = {};
+        renderCharacter();
+    }
+
+    function closeModal() {
+        document.getElementById('taskModal').style.display = 'none';
+        currentAttemptItem = null;
+    }
+
+    // --- ЭКСПОРТ ИГРЫ ---
+    function exportGame() {
+        if (!gameData.baseCharBase64) {
+            alert("Сначала загрузите базу персонажа!");
+            return;
+        }
+
+        // Генерируем HTML код для итоговой игры
+        const finalHTML = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Одень персонажа</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; height: 100vh; background: #ffe4b5; display: flex; justify-content: center; align-items: center; }
+        .game-layout { display: flex; gap: 20px; width: 90vw; max-width: 1000px; height: 80vh; background: #fff; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative;}
+        .character-stage { flex: 1; position: relative; background: #fdf5e6; border-radius: 15px; display: flex; justify-content: center; align-items: flex-end; overflow: hidden; border: 4px solid #d2691e;}
+        .character-stage img { position: absolute; max-width: 100%; max-height: 100%; bottom: 0; object-fit: contain; pointer-events: none; }
+        .inventory { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; align-content: start; background: rgba(210, 105, 30, 0.1); padding: 20px; border-radius: 15px; overflow-y: auto;}
+        .inv-item { background: white; border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.2s; border: 2px solid transparent;}
+        .inv-item:hover { transform: translateY(-5px); border-color: #8fbc8f; }
+        .inv-item img { width: 100%; height: 100px; object-fit: contain; }
+        .reset-btn { position: absolute; top: 15px; left: 15px; background: #ff6b6b; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; z-index: 10; font-weight: bold;}
+        .reset-btn:hover { background: #ff4757; }
+        #taskModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 40px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; }
+        .modal-content h3 { color: #d2691e; font-size: 24px;}
+        input[type="text"] { width: 80%; padding: 12px; margin-bottom: 20px; border: 2px solid #ccc; border-radius: 8px; font-size: 16px;}
+        button.ans-btn { background: #8fbc8f; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; width: 100%; margin-bottom: 10px; transition: 0.2s;}
+        button.ans-btn:hover { background: #2e8b57; }
+        .close-modal { margin-top: 15px; color: #888; text-decoration: underline; cursor: pointer;}
+    </style>
+</head>
+<body>
+    <div class="game-layout">
+        <button class="reset-btn" onclick="resetClothes()">Сбросить всё</button>
+        <div class="character-stage" id="stage">
+            <img id="baseChar" src="" alt="Персонаж">
+        </div>
+        <div class="inventory" id="inventory"></div>
+        <div id="taskModal">
+            <div class="modal-content">
+                <h3 id="modalQuestion">Вопрос?</h3>
+                <div id="modalBody"></div>
+                <div class="close-modal" onclick="closeModal()">Отмена</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const gameData = ${JSON.stringify(gameData)};
+        let equipped = {};
+        let currentAttemptItem = null;
+
+        window.onload = () => {
+            document.getElementById('baseChar').src = gameData.baseCharBase64;
+            const inv = document.getElementById('inventory');
+            inv.innerHTML = gameData.items.map(item => \`
+                <div class="inv-item" onclick="startTask('\${item.id}')">
+                    <img src="\${item.image}">
+                </div>
+            \`).join('');
+        };
+
+        function startTask(itemId) {
+            currentAttemptItem = gameData.items.find(i => i.id === itemId);
+            const modal = document.getElementById('taskModal');
+            const mBody = document.getElementById('modalBody');
+            document.getElementById('modalQuestion').textContent = currentAttemptItem.question;
+            
+            if (currentAttemptItem.taskType === 'input') {
+                mBody.innerHTML = \`<input type="text" id="playerAnswer" placeholder="Ваш ответ"><br><button class="ans-btn" onclick="checkAnswer('input')">Ответить</button>\`;
+            } else {
+                mBody.innerHTML = currentAttemptItem.options.map(opt => 
+                    \`<button class="ans-btn" onclick="checkAnswer('choice', '\${opt}')">\${opt}</button>\`
+                ).join('');
+            }
+            modal.style.display = 'flex';
+        }
+
+        function checkAnswer(type, choiceAns = '') {
+            let ans = type === 'input' ? document.getElementById('playerAnswer').value.trim() : choiceAns;
+            if (ans.toLowerCase() === currentAttemptItem.answer.toLowerCase()) {
+                equipped[currentAttemptItem.category] = currentAttemptItem;
+                renderCharacter();
+                closeModal();
+            } else {
+                alert('Неправильно, попробуй еще раз!');
+            }
+        }
+
+        function renderCharacter() {
+            document.querySelectorAll('.clothes-layer').forEach(el => el.remove());
+            const stage = document.getElementById('stage');
+            Object.values(equipped).forEach(item => {
+                const img = document.createElement('img');
+                img.src = item.image;
+                img.className = 'clothes-layer';
+                img.style.zIndex = "5";
+                stage.appendChild(img);
+            });
+        }
+
+        function resetClothes() { equipped = {}; renderCharacter(); }
+        function closeModal() { document.getElementById('taskModal').style.display = 'none'; currentAttemptItem = null; }
+    <\/script>
+</body>
+</html>`;
+
+        // Создаем файл для скачивания
+        const blob = new Blob([finalHTML], { type: 'text/html' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'dress_up_game.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+</script>
+</body>
+</html>
