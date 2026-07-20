@@ -48,7 +48,10 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 <body>
 <header>
 <div class="logo">EDU<span>GAME</span></div>
-<button class="btn btn-glow" id="copyBtn" onclick="exportForGenially()">Скопировать код для Genially</button>
+<div style="display:flex; gap:10px;">
+    <button class="btn btn-glow" id="testModeBtn" style="background:var(--secondary); color:#fff;" onclick="toggleTestMode()">Запустить тест</button>
+    <button class="btn btn-glow" id="copyBtn" onclick="exportForGenially()">Скопировать код для Genially</button>
+</div>
 </header>
 <div class="workspace">
 <div class="sidebar">
@@ -188,17 +191,16 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 
 <div class="section">
 <div class="section-title">Элементы одежды</div>
-<div class="form-group" style="margin-bottom:15px"><label>Размер одежды (на персонаже): <span id="size-val">15%</span></label><input type="range" id="cfg-itemSize" min="5" max="50" value="15" oninput="document.getElementById('size-val').innerText=this.value+'%';pushUpdate()"></div>
 <div class="file-btn">Добавить элемент (PNG без фона)<input type="file" accept="image/png,image/webp" onchange="addClothingItem(this)"></div>
 <div class="items-grid" id="items-container"></div>
-<div class="hint">В предпросмотре справа перетащите зелёные маркеры на нужные места персонажа — это зафиксирует правильное расположение одежды.</div>
+<div class="hint">В предпросмотре справа перетащите зелёные маркеры на нужные места и потяните за белый кружок в углу для идеального изменения размера.</div>
 </div>
 
 <div style="text-align:center;font-size:11px;color:var(--text-muted);margin-top:20px">© Гальмиз Мария Александровна</div>
 </div>
 
 <div class="preview-area">
-<div class="preview-header">LIVE ПРЕДПРОСМОТР (перетащите зелёные маркеры для фиксации мест)</div>
+<div class="preview-header">LIVE ПРЕДПРОСМОТР (интерактивный редактор)</div>
 <div class="iframe-container">
     <iframe id="game-preview"></iframe>
 </div>
@@ -208,6 +210,7 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 <script>
 let gameData={imgBg:'',imgChar:'',imgTitleBg:'',items:[],targets:[]};
 let iframeReady=false;
+let isTestMode=false;
 
 const DEF_TEXTS = {
   ru: { t: "Математическая Одежда", d: "Одень персонажа, решая задачи!", b: "ИГРАТЬ", w: "ОТЛИЧНАЯ РАБОТА!", l: "ПОПРОБУЙ СНОВА!", r: "НАЧАТЬ ЗАНОВО" },
@@ -271,7 +274,7 @@ function addClothingItem(input){
             canvas.getContext('2d').drawImage(img,0,0,w,h);
             
             gameData.items.push(canvas.toDataURL('image/webp', 0.8));
-            gameData.targets.push({x:45+gameData.items.length*3,y:40});
+            gameData.targets.push({x:45+gameData.items.length*3, y:40, w:15});
             renderItemsList();
             pushUpdate();
         };
@@ -321,7 +324,6 @@ function collectConfig(){
         btnRestart:document.getElementById('cfg-btnRestart').value,
         restartTextColor:document.getElementById('cfg-restartTextColor').value,
         opacity:document.getElementById('cfg-opacity').value/100,
-        itemSize:parseInt(document.getElementById('cfg-itemSize').value),
         questions,
         imgBg:gameData.imgBg,imgChar:gameData.imgChar,imgTitleBg:gameData.imgTitleBg,
         items:gameData.items,targets:gameData.targets
@@ -331,13 +333,32 @@ function collectConfig(){
 function pushUpdate(){
     document.getElementById('titlePanel').style.display=document.getElementById('cfg-useTitle').checked?'block':'none';
     if(iframeReady){
-        document.getElementById('game-preview').contentWindow.postMessage({type:'config',cfg:collectConfig(),editor:true},'*');
+        document.getElementById('game-preview').contentWindow.postMessage({type:'config',cfg:collectConfig(),editor:!isTestMode},'*');
     }
+}
+
+function toggleTestMode() {
+    isTestMode = !isTestMode;
+    const btn = document.getElementById('testModeBtn');
+    if (isTestMode) {
+        btn.innerText = 'Вернуться в редактор';
+        btn.style.background = '#ff3366';
+    } else {
+        btn.innerText = 'Запустить тест';
+        btn.style.background = 'var(--secondary)';
+    }
+    pushUpdate();
 }
 
 window.addEventListener('message',e=>{
     if(e.data.type==='ready'){iframeReady=true;pushUpdate();}
-    if(e.data.type==='targetMoved'){gameData.targets[e.data.index]={x:e.data.x,y:e.data.y};}
+    if(e.data.type==='targetMoved'){
+        gameData.targets[e.data.index].x = e.data.x;
+        gameData.targets[e.data.index].y = e.data.y;
+    }
+    if(e.data.type==='targetResized'){
+        gameData.targets[e.data.index].w = e.data.w;
+    }
 });
 
 function buildGameDoc(){
@@ -360,7 +381,9 @@ body{margin:0;overflow:hidden;user-select:none;color:#fff;height:100vh;width:100
 .item.dragging{position:fixed;z-index:100;cursor:grabbing}
 .shake{animation:shake .4s}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-.marker{position:absolute;width:40px;height:40px;background:rgba(0,255,0,.3);border:2px dashed #00ff00;border-radius:50%;transform:translate(-50%,-50%);cursor:move;z-index:60;display:flex;align-items:center;justify-content:center;font-size:12px;color:#00ff00}
+.marker{position:absolute;border:2px dashed #00ff00;transform:translate(-50%,-50%);cursor:move;z-index:60;}
+.marker img.ghost{width:100%;height:auto;display:block;opacity:0.6;pointer-events:none;}
+.resizer{position:absolute;right:-6px;bottom:-6px;width:14px;height:14px;background:#fff;border:2px solid #00ff00;border-radius:50%;cursor:se-resize;z-index:70;}
 .screen{position:absolute;inset:0;z-index:200;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;box-sizing:border-box}
 .screen p{font-size:22px;max-width:600px;margin:0 0 30px;}
 .play-btn{border:none;padding:15px 40px;border-radius:30px;font-weight:700;font-size:20px;color:#fff;cursor:pointer;text-transform:uppercase;transition:.2s}
@@ -482,6 +505,11 @@ mb.style.boxShadow='0 0 40px '+CFG.modalGlow;
 document.getElementById('qTitle').style.color=CFG.modalGlow;
 document.getElementById('qTitle').innerText=L.q;
 
+clearInterval(timerInt);
+document.querySelectorAll('.item.placed').forEach(e=>e.remove());
+document.getElementById('qModal').style.display='none';
+document.getElementById('endScreen').style.display='none';
+
 buildStartScreen();
 
 if(EDITOR){
@@ -495,8 +523,6 @@ document.getElementById('playArea').style.display='block';
 document.getElementById('gameUI').style.display='flex';
 document.getElementById('livesTxt').innerText=CFG.lives>0?Array(CFG.lives).fill(CFG.lifeIcon).join(''):'';
 document.getElementById('timerTxt').innerText=CFG.time>0?CFG.time:'';
-
-document.getElementById('endScreen').style.display='none';
 buildMarkers();
 buildTray(true);
 }else{
@@ -528,8 +554,19 @@ CFG.targets.forEach((t,i)=>{
 const m=document.createElement('div');
 m.className='marker';
 m.style.left=t.x+'%';m.style.top=t.y+'%';
-m.innerText=(i+1);
+m.style.width=(t.w || 15)+'%';
+
+const ghost=document.createElement('img');
+ghost.src=CFG.items[i];
+ghost.className='ghost';
+m.appendChild(ghost);
+
+const resizer=document.createElement('div');
+resizer.className='resizer';
+m.appendChild(resizer);
+
 makeMarkerDraggable(m,i);
+makeMarkerResizable(m,resizer,i);
 layer.appendChild(m);
 });
 }
@@ -543,12 +580,37 @@ let x=((ev.clientX-r.left)/r.width)*100;
 let y=((ev.clientY-r.top)/r.height)*100;
 x=Math.max(0,Math.min(100,x));y=Math.max(0,Math.min(100,y));
 m.style.left=x+'%';m.style.top=y+'%';
-CFG.targets[i]={x,y};
+CFG.targets[i]={x,y,w:CFG.targets[i].w};
 parent.postMessage({type:'targetMoved',index:i,x,y},'*');
 };
 const up=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);};
 window.addEventListener('pointermove',move);
 window.addEventListener('pointerup',up);
+});
+}
+
+function makeMarkerResizable(m, resizer, i) {
+resizer.addEventListener('pointerdown', e => {
+e.preventDefault();
+e.stopPropagation(); // Отключаем перетаскивание самого маркера
+try{resizer.setPointerCapture(e.pointerId);}catch(err){}
+const area = document.getElementById('playArea').getBoundingClientRect();
+const move = ev => {
+const rect = m.getBoundingClientRect();
+const cx = rect.left + rect.width / 2;
+let nw = (ev.clientX - cx) * 2;
+if(nw < 20) nw = 20; // мин ширина
+let wPct = (nw / area.width) * 100;
+m.style.width = wPct + '%';
+CFG.targets[i].w = wPct;
+parent.postMessage({type:'targetResized', index:i, w:wPct}, '*');
+};
+const up = () => {
+window.removeEventListener('pointermove', move);
+window.removeEventListener('pointerup', up);
+};
+window.addEventListener('pointermove', move);
+window.addEventListener('pointerup', up);
 });
 }
 
@@ -672,7 +734,8 @@ img.style.position='absolute';
 img.style.left=(CFG.targets[idx].x)+'%';
 img.style.top=(CFG.targets[idx].y)+'%';
 img.style.transform='translate(-50%,-50%)';
-img.style.width='';img.style.height=(CFG.itemSize || 15)+'%';
+img.style.width=(CFG.targets[idx].w || 15)+'%';
+img.style.height='auto';
 img.style.filter='drop-shadow(0 0 15px #00ff00)';
 img.style.pointerEvents='none';
 document.getElementById('playArea').appendChild(img);
