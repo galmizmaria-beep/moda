@@ -58,6 +58,10 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 <option value="ru">Русский</option>
 <option value="en">English</option>
 <option value="ko">한국어 (Корейский)</option>
+<option value="es">Español (Испанский)</option>
+<option value="fr">Français (Французский)</option>
+<option value="de">Deutsch (Немецкий)</option>
+<option value="zh">中文 (Китайский)</option>
 </select>
 </div>
 
@@ -77,6 +81,11 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 <select id="cfg-titleFont" onchange="pushUpdate()">
 <option value="Orbitron">Orbitron</option>
 <option value="Rajdhani">Rajdhani</option>
+<option value="Roboto">Roboto</option>
+<option value="Montserrat">Montserrat</option>
+<option value="Oswald">Oswald</option>
+<option value="Caveat">Caveat</option>
+<option value="Pacifico">Pacifico</option>
 <option value="Arial">Arial</option>
 <option value="Georgia">Georgia</option>
 </select></div>
@@ -86,6 +95,10 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 <option value="pulse">Пульсация</option>
 <option value="float">Парение</option>
 <option value="glowAnim">Мерцание</option>
+<option value="bounce">Прыжок</option>
+<option value="shakeTitle">Тряска</option>
+<option value="swing">Качение</option>
+<option value="zoom">Увеличение</option>
 </select></div>
 </div>
 <div class="form-row">
@@ -168,7 +181,11 @@ let iframeReady=false;
 const DEF_TEXTS = {
   ru: { t: "Математическая Одежда", d: "Одень персонажа, решая задачи!", b: "ИГРАТЬ", w: "ОТЛИЧНАЯ РАБОТА!", l: "ПОПРОБУЙ СНОВА!" },
   en: { t: "Math Dress Up", d: "Dress the character by solving math problems!", b: "PLAY", w: "EXCELLENT JOB!", l: "TRY AGAIN!" },
-  ko: { t: "수학 옷 입히기", d: "문제를 풀어 캐릭터에게 옷을 입혀주세요!", b: "놀다", w: "잘했어요!", l: "다시 시도하세요!" }
+  ko: { t: "수학 옷 입히기", d: "문제를 풀어 캐릭터에게 옷을 입혀주세요!", b: "놀다", w: "잘했어요!", l: "다시 시도하세요!" },
+  es: { t: "Vestir Matemático", d: "¡Viste al personaje resolviendo problemas!", b: "JUGAR", w: "¡EXCELENTE TRABAJO!", l: "¡INTÉNTALO DE NUEVO!" },
+  fr: { t: "Habillage Mathématique", d: "Habillez le personnage en résolvant des problèmes !", b: "JOUER", w: "EXCELLENT TRAVAIL !", l: "RÉESSAYEZ !" },
+  de: { t: "Mathe-Anziehen", d: "Zieh den Charakter an, indem du Aufgaben löst!", b: "SPIELEN", w: "HERVORRAGENDE ARBEIT!", l: "VERSUCHE ES ERNEUT!" },
+  zh: { t: "数学换装", d: "通过解决问题为角色换装！", b: "玩", w: "干得好！", l: "再试一次！" }
 };
 
 function changeLangTexts() {
@@ -189,14 +206,15 @@ const label=input.parentElement;label.style.color='#00f0ff';
 const reader=new FileReader();
 reader.onload=e=>{const img=new Image();img.onload=()=>{
 const canvas=document.createElement('canvas');
-const MAX=(key==='bg'||key==='titleBg')?1000:400;
+// Снижаем MAX и качество для успешного экспорта в Genially
+const MAX=(key==='bg'||key==='titleBg')?800:300;
 let w=img.width,h=img.height;
 if(w>MAX){h*=MAX/w;w=MAX}
 canvas.width=w;canvas.height=h;
 canvas.getContext('2d').drawImage(img,0,0,w,h);
-if(key==='bg')gameData.imgBg=canvas.toDataURL('image/jpeg',.6);
-if(key==='titleBg')gameData.imgTitleBg=canvas.toDataURL('image/jpeg',.6);
-if(key==='char')gameData.imgChar=canvas.toDataURL('image/webp',.8);
+if(key==='bg')gameData.imgBg=canvas.toDataURL('image/jpeg',.4);
+if(key==='titleBg')gameData.imgTitleBg=canvas.toDataURL('image/jpeg',.4);
+if(key==='char')gameData.imgChar=canvas.toDataURL('image/webp',.6);
 label.innerHTML=`Загружено ✓<input type="file" accept="image/*" onchange="processImg(this,'${key}')">`;
 pushUpdate();
 };img.src=e.target.result};
@@ -208,9 +226,9 @@ const file=input.files[0];if(!file)return;
 const reader=new FileReader();
 reader.onload=e=>{const img=new Image();img.onload=()=>{
 const canvas=document.createElement('canvas');let w=img.width,h=img.height;
-if(w>250){h*=250/w;w=250}canvas.width=w;canvas.height=h;
+if(w>200){h*=200/w;w=200}canvas.width=w;canvas.height=h;
 canvas.getContext('2d').drawImage(img,0,0,w,h);
-gameData.items.push(canvas.toDataURL('image/webp',.8));
+gameData.items.push(canvas.toDataURL('image/webp',.6));
 gameData.targets.push({x:45+gameData.items.length*3,y:40});
 renderItemsList();pushUpdate();
 };img.src=e.target.result};
@@ -280,7 +298,7 @@ window.MathJax={tex:{inlineMath:[['$','$']]},svg:{fontCache:'global'}};
 <\/script>
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"><\/script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&family=Roboto:wght@500;700&family=Montserrat:wght@700&family=Oswald:wght@700&family=Caveat:wght@700&family=Pacifico&display=swap');
 *, button, input { font-family: inherit; }
 body{margin:0;overflow:hidden;user-select:none;color:#fff;height:100vh;width:100vw;background:#000}
 #bgLayer{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0}
@@ -301,9 +319,17 @@ body{margin:0;overflow:hidden;user-select:none;color:#fff;height:100vh;width:100
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
 @keyframes glowAnim{0%,100%{filter:brightness(1)}50%{filter:brightness(1.6)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+@keyframes shakeTitle{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+@keyframes swing{0%,100%{transform:rotate(0deg)}50%{transform:rotate(5deg)}75%{transform:rotate(-5deg)}}
+@keyframes zoom{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
 .anim-pulse{animation:pulse 1.5s infinite}
 .anim-float{animation:float 3s ease-in-out infinite}
 .anim-glowAnim{animation:glowAnim 1.5s infinite}
+.anim-bounce{animation:bounce 1s infinite}
+.anim-shakeTitle{animation:shakeTitle .5s infinite}
+.anim-swing{animation:swing 2s infinite}
+.anim-zoom{animation:zoom 2s infinite}
 .modal-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.8);z-index:150;justify-content:center;align-items:center}
 .modal{padding:30px;border-radius:15px;width:90%;max-width:500px;text-align:center}
 .modal h2{margin:0 0 15px;font-size:24px}
@@ -355,7 +381,11 @@ else{o.type='sawtooth';o.frequency.setValueAtTime(150,audioCtx.currentTime);g.ga
 const LANGS={
 ru:{q:'ВОПРОС',answer:'ОТВЕТИТЬ',wrong:'НЕВЕРНО! ПОПРОБУЙ ЕЩЁ.',restart:'НАЧАТЬ ЗАНОВО',ph:'Ваш ответ...',timeout:'ВРЕМЯ ВЫШЛО!'},
 en:{q:'QUESTION',answer:'ANSWER',wrong:'WRONG! TRY AGAIN.',restart:'RESTART',ph:'Your answer...',timeout:'TIME OUT!'},
-ko:{q:'질문',answer:'대답하기',wrong:'틀렸습니다! 다시 시도하세요.',restart:'다시 시작',ph:'답을 입력하세요...',timeout:'시간 초과!'}
+ko:{q:'질문',answer:'대답하기',wrong:'틀렸습니다! 다시 시도하세요.',restart:'다시 시작',ph:'답을 입력하세요...',timeout:'시간 초과!'},
+es:{q:'PREGUNTA',answer:'RESPONDER',wrong:'¡INCORRECTO! INTÉNTALO DE NUEVO.',restart:'REINICIAR',ph:'Tu respuesta...',timeout:'¡TIEMPO AGOTADO!'},
+fr:{q:'QUESTION',answer:'RÉPONDRE',wrong:'FAUX ! RÉESSAYEZ.',restart:'RECOMMENCER',ph:'Votre réponse...',timeout:'TEMPS ÉCOULÉ !'},
+de:{q:'FRAGE',answer:'ANTWORTEN',wrong:'FALSCH! VERSUCHE ES ERNEUT.',restart:'NEUSTART',ph:'Deine Antwort...',timeout:'ZEIT ABGELAUFEN!'},
+zh:{q:'问题',answer:'回答',wrong:'错误！再试一次。',restart:'重新开始',ph:'你的答案...',timeout:'时间到！'}
 };
 
 window.addEventListener('message',e=>{
@@ -478,7 +508,7 @@ tray.innerHTML='';
 CFG.items.forEach((src,i)=>{
 const img=document.createElement('img');
 img.src=src;img.className='item';img.dataset.idx=i;
-if(!EDITOR)makeItemDraggable(img,i);
+makeItemDraggable(img,i);
 tray.appendChild(img);
 });
 }
@@ -528,7 +558,7 @@ function returnToTray(img){
 img.classList.remove('dragging','placed');
 img.style.position='';img.style.left='';img.style.top='';img.style.width='';img.style.height='';
 document.getElementById('tray').appendChild(img);
-if(!EDITOR)makeItemDraggable(img,parseInt(img.dataset.idx));
+makeItemDraggable(img,parseInt(img.dataset.idx));
 }
 
 function triggerQuestion(img,idx,tx,ty,area){
@@ -554,7 +584,9 @@ c.appendChild(b);
 }
 document.getElementById('qModal')._ctx={img,idx,tx,ty,area};
 document.getElementById('qModal').style.display='flex';
-if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise([document.getElementById('qText')]);
+if(window.MathJax&&MathJax.typesetPromise) {
+    try { MathJax.typesetPromise([document.getElementById('qText')]); } catch(e){}
+}
 }
 
 function submitText(){
@@ -609,9 +641,9 @@ if(!audioCtx){try{audioCtx=new (window.AudioContext||window.webkitAudioContext)(
 document.getElementById('startScreen').style.display='none';
 document.getElementById('endScreen').style.display='none';
 document.getElementById('playArea').style.display='block';
-if(EDITOR)return;
+
 document.getElementById('gameUI').style.display='flex';
-document.getElementById('markerLayer').innerHTML='';
+if(!EDITOR) document.getElementById('markerLayer').innerHTML=''; // В редакторе оставляем маркеры для тестов
 placed=0;curLives=CFG.lives;curTime=CFG.time;
 if(CFG.lives>0)document.getElementById('livesTxt').innerText=repeatIcon();
 if(CFG.time>0){
@@ -655,9 +687,9 @@ let doc=buildGameDoc(false);
 const inject='<script>CFG='+JSON.stringify(cfg)+';EDITOR=false;applyConfig();<\\/script>';
 doc=doc.replace('</body>',inject+'</body>');
 
-// Оборачиваем в div + base64 iframe — этот метод 100% не выдает черный экран в Genially
-const encodedDoc = btoa(unescape(encodeURIComponent(doc)));
-const finalHtml = `<div style="position:relative; width:100%; height:600px; overflow:hidden;"><iframe src="data:text/html;base64,${encodedDoc}" width="100%" height="100%" frameborder="0" allowfullscreen allow="autoplay" style="border:none; overflow:hidden;"></iframe></div>`;
+// Надежный метод экспорта для Genially с использованием обычного iframe srcdoc и div-обертки 
+const esc = doc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const finalHtml = `<div style="width:100%;height:600px;display:flex;justify-content:center;align-items:center;overflow:hidden;"><iframe srcdoc="${esc}" width="100%" height="100%" frameborder="0" allowfullscreen allow="autoplay" style="border:none; overflow:hidden; border-radius:10px;"></iframe></div>`;
 
 navigator.clipboard.writeText(finalHtml).then(()=>{
 const b=document.getElementById('copyBtn');
