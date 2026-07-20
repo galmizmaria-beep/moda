@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -726,7 +725,12 @@ parent.postMessage({type:'ready'},'*');
 </body></html>`;
 }
 
-  function exportForGenially(){
+function initPreview(){
+    const iframe=document.getElementById('game-preview');
+    iframe.srcdoc=buildGameDoc(true);
+}
+
+function exportForGenially(){
     const cfg = collectConfig();
     let doc = buildGameDoc(false);
     
@@ -765,6 +769,7 @@ parent.postMessage({type:'ready'},'*');
         alert('Размер игры слишком большой! Буфер обмена переполнен. Сделайте картинки меньше по весу.');
     });
 }
+
 window.onload=initPreview;
 </script>
 </body>
