@@ -739,12 +739,7 @@ if(availableQuestions.length === 0) {
     availableQuestions = Array.from({length: CFG.questions.length}, (_, i) => i);
 }
 
-let qIdx;
-if (EDITOR) {
-    qIdx = idx < CFG.questions.length ? idx : (idx % CFG.questions.length);
-} else {
-    qIdx = availableQuestions[0]; // Всегда строгий порядок
-}
+let qIdx = idx < CFG.questions.length ? idx : (idx % CFG.questions.length);
 
 curTargetQ = CFG.questions[qIdx];
 document.getElementById('qText').innerHTML=curTargetQ[0];
