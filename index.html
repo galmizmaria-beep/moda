@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -188,19 +187,18 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 
 <div class="section">
 <div class="section-title">Вопросы ($ = формулы)</div>
-<label class="toggle" style="margin-bottom:10px"><input type="checkbox" id="cfg-randomQ" checked onchange="pushUpdate()"> Случайный порядок вопросов (иначе — строго по порядку)</label>
 <textarea id="cfg-questions" oninput="pushUpdate()">Сколько будет 2+2? | 4 | 5 | 6
 Вычислите $\frac{10}{2}$: | 5
 Что такое $x$, если $x+2=4$? | 2 | 4 | -2
 Столица Франции? | Париж | Лондон | Рим</textarea>
-<div class="hint">Выбор: Вопрос | Правильный | Неверный | Неверный<br>Текст: Вопрос | Правильный</div>
+<div class="hint">Выбор: Вопрос | Правильный | Неверный | Неверный<br>Текст: Вопрос | Правильный<br>Вопросы появляются в игре строго по порядку.</div>
 </div>
 
 <div class="section">
 <div class="section-title">Элементы одежды</div>
 <div class="file-btn">Добавить элемент (PNG без фона)<input type="file" accept="image/png,image/webp" onchange="addClothingItem(this)"></div>
 <div class="items-grid" id="items-container"></div>
-<div class="hint">В предпросмотре справа перетащите зелёные маркеры на нужные места, потяните за белый кружок для размера и используйте стрелочки для вращения.</div>
+<div class="hint">В предпросмотре справа перетащите зелёные маркеры на нужные места, потяните за белый кружок для размера и используйте стрелочки для вращения.<br><br>Кликните по одежде в панели для предпросмотра окна вопроса!</div>
 </div>
 
 <div style="text-align:center;font-size:11px;color:var(--text-muted);margin-top:20px">© Гальмиз Мария Александровна</div>
@@ -332,7 +330,6 @@ function collectConfig(){
         inputBg:document.getElementById('cfg-inputBg').value,
         correctColor:document.getElementById('cfg-correctColor').value,
         wrongColor:document.getElementById('cfg-wrongColor').value,
-        randomQuestions:document.getElementById('cfg-randomQ').checked,
         txtWin:document.getElementById('cfg-txtWin').value,
         txtLose:document.getElementById('cfg-txtLose').value,
         txtWinColor:document.getElementById('cfg-txtWinColor').value,
@@ -661,7 +658,12 @@ tray.innerHTML='';
 CFG.items.forEach((src,i)=>{
 const img=document.createElement('img');
 img.src=src;img.className='item';img.dataset.idx=i;
-if(!EDITOR) makeItemDraggable(img,i);
+if(!EDITOR) {
+    makeItemDraggable(img,i);
+} else {
+    img.style.cursor='pointer';
+    img.onclick=()=>triggerQuestion(img,i,0,0,null);
+}
 tray.appendChild(img);
 });
 }
@@ -713,19 +715,17 @@ document.getElementById('tray').appendChild(img);
 }
 
 function triggerQuestion(img,idx,tx,ty,area){
-img.style.visibility='hidden';
-if(CFG.questions.length===0){placeItem(img,idx,tx,ty,area);return;}
+if(!EDITOR) img.style.visibility='hidden';
+if(CFG.questions.length===0){
+    if(!EDITOR) placeItem(img,idx,tx,ty,area);
+    return;
+}
 
 if(availableQuestions.length === 0) {
     availableQuestions = Array.from({length: CFG.questions.length}, (_, i) => i);
 }
 
-let qIdx;
-if(CFG.randomQuestions) {
-    qIdx = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
-} else {
-    qIdx = availableQuestions[0];
-}
+let qIdx = availableQuestions[0]; // Всегда строгий порядок
 
 curTargetQ = CFG.questions[qIdx];
 document.getElementById('qText').innerHTML=curTargetQ[0];
@@ -766,15 +766,24 @@ if(a===curTargetQ[1])correct({img,idx,tx,ty,area});else wrong({img,idx,tx,ty,are
 function correct(ctx){
 playSound('win');
 
-const poolIndex = availableQuestions.indexOf(ctx.qIdx);
-if(poolIndex > -1) availableQuestions.splice(poolIndex, 1);
-
 const mb = document.getElementById('modalBox');
 const oldShadow = mb.style.boxShadow;
 const oldBorder = mb.style.border;
 
 mb.style.boxShadow = '0 0 40px ' + (CFG.correctColor || '#00ff00');
 mb.style.border = '2px solid ' + (CFG.correctColor || '#00ff00');
+
+if(EDITOR) {
+    setTimeout(() => {
+        mb.style.boxShadow = oldShadow;
+        mb.style.border = oldBorder;
+        document.getElementById('qModal').style.display='none';
+    }, 1000);
+    return;
+}
+
+const poolIndex = availableQuestions.indexOf(ctx.qIdx);
+if(poolIndex > -1) availableQuestions.splice(poolIndex, 1);
 
 setTimeout(() => {
     mb.style.boxShadow = oldShadow;
@@ -798,6 +807,16 @@ const wm = document.getElementById('wrongMsg');
 wm.style.display='block';
 wm.style.color = (CFG.wrongColor || '#ff3366');
 wm.style.textShadow = '0 0 10px ' + (CFG.wrongColor || '#ff3366');
+
+if(EDITOR) {
+    setTimeout(() => {
+        mb.style.boxShadow = oldShadow;
+        mb.style.border = oldBorder;
+        wm.style.display = 'none';
+        document.getElementById('qModal').style.display='none';
+    }, 1200);
+    return;
+}
 
 if(CFG.lives>0){
     curLives--;
