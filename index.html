@@ -390,9 +390,14 @@ buildStartScreen();
 
 // В режиме редактора показываем персонажа+маркеры для настройки позиций
 if(EDITOR){
+if(CFG.useTitle){
+document.getElementById('startScreen').style.display='flex';
+document.getElementById('playArea').style.display='none';
+} else {
 document.getElementById('startScreen').style.display='none';
-document.getElementById('endScreen').style.display='none';
 document.getElementById('playArea').style.display='block';
+}
+document.getElementById('endScreen').style.display='none';
 document.getElementById('gameUI').style.display='none';
 buildMarkers();
 buildTray(true);
@@ -404,7 +409,6 @@ buildTray(false);
 function buildStartScreen(){
 const s=document.getElementById('startScreen');
 if(!CFG.useTitle){s.style.display='none';if(!EDITOR)startGame();return;}
-if(EDITOR)return;
 s.style.display='flex';
 let bgStyle='';
 if(CFG.imgTitleBg){
@@ -591,6 +595,7 @@ if(!audioCtx){try{audioCtx=new (window.AudioContext||window.webkitAudioContext)(
 document.getElementById('startScreen').style.display='none';
 document.getElementById('endScreen').style.display='none';
 document.getElementById('playArea').style.display='block';
+if(EDITOR)return;
 document.getElementById('gameUI').style.display='flex';
 document.getElementById('markerLayer').innerHTML=''; // скрываем маркеры в игре
 placed=0;curLives=CFG.lives;curTime=CFG.time;
@@ -636,8 +641,8 @@ function exportForGenially(){
 // Собираем автономную версию: конфиг вшивается прямо в документ
 const cfg=collectConfig();
 let doc=buildGameDoc(false);
-// Вставляем автозапуск конфига без postMessage
-const inject='<script>window.addEventListener("DOMContentLoaded",function(){window.postMessage({type:"config",cfg:'+JSON.stringify(cfg)+',editor:false},"*");});<\\/script>';
+// Вставляем автозапуск конфига напрямую (избавляет от проблемы с postMessage и черным экраном в Genially)
+const inject='<script>CFG='+JSON.stringify(cfg)+';EDITOR=false;applyConfig();<\\/script>';
 doc=doc.replace('</body>',inject+'</body>');
 const esc=doc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const ifr='<iframe srcdoc="'+esc+'" width="100%" height="600px" frameborder="0" allowfullscreen allow="autoplay"></iframe>';
