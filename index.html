@@ -47,10 +47,7 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 <body>
 <header>
 <div class="logo">EDU<span>GAME</span></div>
-<div style="display:flex;align-items:center;gap:15px">
-<span id="sizeIndicator" style="font-size:12px;color:var(--text-muted)"></span>
 <button class="btn btn-glow" id="copyBtn" onclick="exportForGenially()">Скопировать код для Genially</button>
-</div>
 </header>
 <div class="workspace">
 <div class="sidebar">
@@ -232,104 +229,122 @@ function changeLangTexts() {
 }
 
 function processImg(input,key){
-const file=input.files[0];if(!file)return;
-const label=input.parentElement;label.style.color='#00f0ff';
-const reader=new FileReader();
-reader.onload=e=>{const img=new Image();img.onload=()=>{
-const canvas=document.createElement('canvas');
-// Снижаем MAX и качество для успешного экспорта в Genially
-const MAX=(key==='bg'||key==='titleBg')?800:300;
-let w=img.width,h=img.height;
-if(w>MAX){h*=MAX/w;w=MAX}
-canvas.width=w;canvas.height=h;
-canvas.getContext('2d').drawImage(img,0,0,w,h);
-if(key==='bg')gameData.imgBg=canvas.toDataURL('image/jpeg',.4);
-if(key==='titleBg')gameData.imgTitleBg=canvas.toDataURL('image/jpeg',.4);
-if(key==='char')gameData.imgChar=canvas.toDataURL('image/webp',.6);
-label.innerHTML=`Загружено ✓<input type="file" accept="image/*" onchange="processImg(this,'${key}')">`;
-pushUpdate();
-};img.src=e.target.result};
-reader.readAsDataURL(file);
+    const file=input.files[0];if(!file)return;
+    const label=input.parentElement;label.style.color='#00f0ff';
+    const reader=new FileReader();
+    reader.onload=e=>{
+        const img=new Image();
+        img.onload=()=>{
+            const canvas=document.createElement('canvas');
+            // Усиленное сжатие: Фон макс 600px, персонаж макс 250px
+            const MAX=(key==='bg'||key==='titleBg')? 600 : 250;
+            let w=img.width,h=img.height;
+            if(w>MAX){h*=MAX/w;w=MAX}
+            canvas.width=w;canvas.height=h;
+            canvas.getContext('2d').drawImage(img,0,0,w,h);
+            
+            // Качество 0.5 для экономии веса кода
+            if(key==='bg')gameData.imgBg=canvas.toDataURL('image/jpeg',0.5);
+            if(key==='titleBg')gameData.imgTitleBg=canvas.toDataURL('image/jpeg',0.5);
+            if(key==='char')gameData.imgChar=canvas.toDataURL('image/webp',0.5);
+            
+            label.innerHTML=`Загружено ✓<input type="file" accept="image/*" onchange="processImg(this,'${key}')">`;
+            pushUpdate();
+        };
+        img.src=e.target.result
+    };
+    reader.readAsDataURL(file);
 }
 
 function addClothingItem(input){
-const file=input.files[0];if(!file)return;
-const reader=new FileReader();
-reader.onload=e=>{const img=new Image();img.onload=()=>{
-const canvas=document.createElement('canvas');let w=img.width,h=img.height;
-if(w>200){h*=200/w;w=200}canvas.width=w;canvas.height=h;
-canvas.getContext('2d').drawImage(img,0,0,w,h);
-gameData.items.push(canvas.toDataURL('image/webp',.6));
-gameData.targets.push({x:45+gameData.items.length*3,y:40});
-renderItemsList();pushUpdate();
-};img.src=e.target.result};
-reader.readAsDataURL(file);input.value='';
+    const file=input.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=e=>{
+        const img=new Image();
+        img.onload=()=>{
+            const canvas=document.createElement('canvas');
+            let w=img.width,h=img.height;
+            // Усиленное сжатие вещей: макс 150px
+            if(w>150){h*=150/w;w=150}
+            canvas.width=w;canvas.height=h;
+            canvas.getContext('2d').drawImage(img,0,0,w,h);
+            
+            // Качество 0.5 для легкости кода
+            gameData.items.push(canvas.toDataURL('image/webp',0.5));
+            gameData.targets.push({x:45+gameData.items.length*3,y:40});
+            renderItemsList();
+            pushUpdate();
+        };
+        img.src=e.target.result
+    };
+    reader.readAsDataURL(file);
+    input.value='';
 }
 
 function renderItemsList(){
-const c=document.getElementById('items-container');c.innerHTML='';
-gameData.items.forEach((b,i)=>{c.innerHTML+=`<div class="item-thumb"><img src="${b}"><button class="del-btn" onclick="delItem(${i})">X</button></div>`});
+    const c=document.getElementById('items-container');c.innerHTML='';
+    gameData.items.forEach((b,i)=>{c.innerHTML+=`<div class="item-thumb"><img src="${b}"><button class="del-btn" onclick="delItem(${i})">X</button></div>`});
 }
 function delItem(i){gameData.items.splice(i,1);gameData.targets.splice(i,1);renderItemsList();pushUpdate();}
 
 function collectConfig(){
-const rawQ=document.getElementById('cfg-questions').value.split('\n');
-let questions=[];
-rawQ.forEach(l=>{if(l.trim()){const p=l.split('|').map(s=>s.trim());if(p.length>=2)questions.push(p)}});
-return{
-lang:document.getElementById('cfg-lang').value,
-useTitle:document.getElementById('cfg-useTitle').checked,
-title:document.getElementById('cfg-title').value,
-desc:document.getElementById('cfg-desc').value,
-titleColor:document.getElementById('cfg-titleColor').value,
-descColor:document.getElementById('cfg-descColor').value,
-titleSize:document.getElementById('cfg-titleSize').value,
-titleFont:document.getElementById('cfg-titleFont').value,
-titleAnim:document.getElementById('cfg-titleAnim').value,
-playBtnColor:document.getElementById('cfg-playBtnColor').value,
-playBtnGlow:document.getElementById('cfg-playBtnGlow').value,
-btnPlay:document.getElementById('cfg-btnPlay').value,
-titleBgOp:document.getElementById('cfg-titleBgOp').value/100,
-lives:parseInt(document.getElementById('cfg-lives').value),
-time:parseInt(document.getElementById('cfg-time').value),
-timerColor:document.getElementById('cfg-timerColor').value,
-livesColor:document.getElementById('cfg-livesColor').value,
-lifeIcon:document.getElementById('cfg-lifeIcon').value,
-modalBg:document.getElementById('cfg-modalBg').value,
-modalGlow:document.getElementById('cfg-modalGlow').value,
-ansColor:document.getElementById('cfg-ansColor').value,
-inputBg:document.getElementById('cfg-inputBg').value,
-txtWin:document.getElementById('cfg-txtWin').value,
-txtLose:document.getElementById('cfg-txtLose').value,
-txtWinColor:document.getElementById('cfg-txtWinColor').value,
-txtLoseColor:document.getElementById('cfg-txtLoseColor').value,
-btnRestart:document.getElementById('cfg-btnRestart').value,
-restartTextColor:document.getElementById('cfg-restartTextColor').value,
-opacity:document.getElementById('cfg-opacity').value/100,
-questions,
-imgBg:gameData.imgBg,imgChar:gameData.imgChar,imgTitleBg:gameData.imgTitleBg,
-items:gameData.items,targets:gameData.targets
-};
+    const rawQ=document.getElementById('cfg-questions').value.split('\n');
+    let questions=[];
+    rawQ.forEach(l=>{if(l.trim()){const p=l.split('|').map(s=>s.trim());if(p.length>=2)questions.push(p)}});
+    return{
+        lang:document.getElementById('cfg-lang').value,
+        useTitle:document.getElementById('cfg-useTitle').checked,
+        title:document.getElementById('cfg-title').value,
+        desc:document.getElementById('cfg-desc').value,
+        titleColor:document.getElementById('cfg-titleColor').value,
+        descColor:document.getElementById('cfg-descColor').value,
+        titleSize:document.getElementById('cfg-titleSize').value,
+        titleFont:document.getElementById('cfg-titleFont').value,
+        titleAnim:document.getElementById('cfg-titleAnim').value,
+        playBtnColor:document.getElementById('cfg-playBtnColor').value,
+        playBtnGlow:document.getElementById('cfg-playBtnGlow').value,
+        btnPlay:document.getElementById('cfg-btnPlay').value,
+        titleBgOp:document.getElementById('cfg-titleBgOp').value/100,
+        lives:parseInt(document.getElementById('cfg-lives').value),
+        time:parseInt(document.getElementById('cfg-time').value),
+        timerColor:document.getElementById('cfg-timerColor').value,
+        livesColor:document.getElementById('cfg-livesColor').value,
+        lifeIcon:document.getElementById('cfg-lifeIcon').value,
+        modalBg:document.getElementById('cfg-modalBg').value,
+        modalGlow:document.getElementById('cfg-modalGlow').value,
+        ansColor:document.getElementById('cfg-ansColor').value,
+        inputBg:document.getElementById('cfg-inputBg').value,
+        txtWin:document.getElementById('cfg-txtWin').value,
+        txtLose:document.getElementById('cfg-txtLose').value,
+        txtWinColor:document.getElementById('cfg-txtWinColor').value,
+        txtLoseColor:document.getElementById('cfg-txtLoseColor').value,
+        btnRestart:document.getElementById('cfg-btnRestart').value,
+        restartTextColor:document.getElementById('cfg-restartTextColor').value,
+        opacity:document.getElementById('cfg-opacity').value/100,
+        questions,
+        imgBg:gameData.imgBg,imgChar:gameData.imgChar,imgTitleBg:gameData.imgTitleBg,
+        items:gameData.items,targets:gameData.targets
+    };
 }
 
 function pushUpdate(){
-document.getElementById('titlePanel').style.display=document.getElementById('cfg-useTitle').checked?'block':'none';
-if(iframeReady){
-document.getElementById('game-preview').contentWindow.postMessage({type:'config',cfg:collectConfig(),editor:true},'*');
-}
+    document.getElementById('titlePanel').style.display=document.getElementById('cfg-useTitle').checked?'block':'none';
+    if(iframeReady){
+        document.getElementById('game-preview').contentWindow.postMessage({type:'config',cfg:collectConfig(),editor:true},'*');
+    }
 }
 
 window.addEventListener('message',e=>{
-if(e.data.type==='ready'){iframeReady=true;pushUpdate();}
-if(e.data.type==='targetMoved'){gameData.targets[e.data.index]={x:e.data.x,y:e.data.y};}
+    if(e.data.type==='ready'){iframeReady=true;pushUpdate();}
+    if(e.data.type==='targetMoved'){gameData.targets[e.data.index]={x:e.data.x,y:e.data.y};}
 });
 
 function buildGameDoc(editorMode){
 return `<!DOCTYPE html><html><head><meta charset="UTF-8">
 <script>
 window.MathJax={tex:{inlineMath:[['$','$']]},svg:{fontCache:'global'}};
-<\/script>
-<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"><\/script>
+</${'script'}>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></${'script'}>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&family=Roboto:wght@500;700&family=Montserrat:wght@700&family=Oswald:wght@700&family=Caveat:wght@700&family=Pacifico&display=swap');
 *, button, input { font-family: inherit; }
@@ -432,15 +447,18 @@ function applyConfig(){
 L=LANGS[CFG.lang]||LANGS.ru;
 document.body.style.fontFamily = CFG.titleFont;
 
+// Фон
 const bg=document.getElementById('bgLayer');
 bg.style.backgroundImage=CFG.imgBg?'url('+CFG.imgBg+')':'none';
 bg.style.background=CFG.imgBg?bg.style.background:'#06020c';
 if(CFG.imgBg)bg.style.backgroundImage='url('+CFG.imgBg+')';
 
+// Персонаж
 const char=document.getElementById('baseChar');
 if(CFG.imgChar){char.src=CFG.imgChar;char.style.display='block';char.style.opacity=CFG.opacity;}
 else char.style.display='none';
 
+// UI жизни/таймер
 const tb=document.getElementById('timerBox');
 tb.style.display=CFG.time>0?'block':'none';
 tb.style.border='2px solid '+CFG.timerColor;
@@ -452,6 +470,7 @@ lb.style.border='2px solid '+CFG.livesColor;
 lb.style.color=CFG.livesColor;
 lb.style.textShadow='0 0 10px '+CFG.livesColor;
 
+// Стиль плашки
 const mb=document.getElementById('modalBox');
 mb.style.background=CFG.modalBg;
 mb.style.border='2px solid '+CFG.modalGlow;
@@ -459,6 +478,7 @@ mb.style.boxShadow='0 0 40px '+CFG.modalGlow;
 document.getElementById('qTitle').style.color=CFG.modalGlow;
 document.getElementById('qTitle').innerText=L.q;
 
+// Титульный экран
 buildStartScreen();
 
 if(EDITOR){
@@ -469,6 +489,7 @@ document.getElementById('playArea').style.display='none';
 document.getElementById('startScreen').style.display='none';
 document.getElementById('playArea').style.display='block';
 }
+// В редакторе ВСЕГДА показываем таймер и жизни для настройки
 document.getElementById('gameUI').style.display='flex';
 document.getElementById('livesTxt').innerText=CFG.lives>0?Array(CFG.lives).fill(CFG.lifeIcon).join(''):'';
 document.getElementById('timerTxt').innerText=CFG.time>0?CFG.time:'';
@@ -523,9 +544,9 @@ m.style.left=x+'%';m.style.top=y+'%';
 CFG.targets[i]={x,y};
 parent.postMessage({type:'targetMoved',index:i,x,y},'*');
 };
-const up=()=>{m.removeEventListener('pointermove',move);m.removeEventListener('pointerup',up);};
-m.addEventListener('pointermove',move);
-m.addEventListener('pointerup',up);
+const up=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);};
+window.addEventListener('pointermove',move);
+window.addEventListener('pointerup',up);
 });
 }
 
@@ -556,12 +577,12 @@ img.style.left=(ev.clientX-r.width/2)+'px';
 img.style.top=(ev.clientY-r.height/2)+'px';
 };
 const up=ev=>{
-img.removeEventListener('pointermove',move);
-img.removeEventListener('pointerup',up);
+window.removeEventListener('pointermove',move);
+window.removeEventListener('pointerup',up);
 checkDrop(img,idx,ev);
 };
-img.addEventListener('pointermove',move);
-img.addEventListener('pointerup',up);
+window.addEventListener('pointermove',move);
+window.addEventListener('pointerup',up);
 });
 }
 
@@ -701,29 +722,60 @@ document.getElementById('restartBtn').style.color=CFG.restartTextColor||'#ffffff
 }
 
 parent.postMessage({type:'ready'},'*');
-<\/script>
+</${'script'}>
 </body></html>`;
 }
 
 function initPreview(){
-const iframe=document.getElementById('game-preview');
-iframe.srcdoc=buildGameDoc(true);
+    const iframe=document.getElementById('game-preview');
+    iframe.srcdoc=buildGameDoc(true);
 }
 
 function exportForGenially(){
-const cfg=collectConfig();
-let doc=buildGameDoc(false);
-const inject='<script>CFG='+JSON.stringify(cfg)+';EDITOR=false;applyConfig();<\/script>';
-doc=doc.replace('</body>',inject+'</body>');
+    const cfg = collectConfig();
+    let doc = buildGameDoc(false);
+    
+    // Вшиваем настройки игры напрямую
+    const inject = '<script>CFG='+JSON.stringify(cfg)+';EDITOR=false;applyConfig();<\\/script>';
+    doc = doc.replace('</body>', inject + '</body>');
 
-const b64='data:text/html;charset=utf-8;base64,'+btoa(unescape(encodeURIComponent(doc)));
-const finalHtml='<iframe src="'+b64+'" width="100%" height="600" frameborder="0" allowfullscreen allow="autoplay" style="border:none;overflow:hidden;border-radius:10px;"></iframe>';
+    // 1. Кодируем документ, чтобы не сломались кавычки внутри Genially
+    const encodedDoc = encodeURIComponent(doc);
+    const uniqueId = 'frame-' + Math.random().toString(36).substring(2, 9);
 
-navigator.clipboard.writeText(finalHtml).then(()=>{
-const b=document.getElementById('copyBtn');
-b.innerText='СКОПИРОВАНО! ВСТАВЬТЕ В GENIALLY';b.style.background='#00ff00';
-setTimeout(()=>{b.innerText='Скопировать код для Genially';b.style.background='var(--primary)';},4000);
-});
+    // 2. Метод обхода ограничений Genially - генерация iframe через JS налету
+    const finalHtml = `
+<div style="width:100%; height:100%; min-height:500px; position:relative;">
+  <iframe id="${uniqueId}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; border-radius:10px; overflow:hidden;" allowfullscreen="true"></iframe>
+  <script>
+    setTimeout(function(){
+      var htmlStr = decodeURIComponent("${encodedDoc}");
+      var iframe = document.getElementById("${uniqueId}");
+      if(iframe) {
+        var doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(htmlStr);
+        doc.close();
+      }
+    }, 150);
+  <\/script>
+</div>
+`;
+
+    // 3. Копируем итоговый код в буфер обмена
+    navigator.clipboard.writeText(finalHtml).then(() => {
+        const b = document.getElementById('copyBtn');
+        b.innerText = 'СКОПИРОВАНО! ВСТАВЬТЕ В GENIALLY';
+        b.style.background = '#00ff00';
+        b.style.color = '#000';
+        
+        setTimeout(() => {
+            b.innerText = 'Скопировать код для Genially';
+            b.style.background = 'var(--primary)';
+        }, 4000);
+    }).catch(err => {
+        alert('Ошибка! Добавлено слишком много графики, и код превысил лимит буфера обмена. Попробуйте загружать меньше картинок.');
+    });
 }
 
 window.onload=initPreview;
