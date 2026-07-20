@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Builder - Образовательная игра</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <title>EduGame Builder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-main: #090514;
-            --bg-panel: #140d2b;
-            --bg-panel-light: #1e1440;
-            --primary: #a626ff;
-            --primary-glow: rgba(166, 38, 255, 0.5);
-            --secondary: #00f0ff;
+            --bg-main: #06020c;
+            --bg-panel: #110920;
+            --bg-input: #1a1033;
+            --primary: #00f0ff;
+            --primary-glow: rgba(0, 240, 255, 0.4);
+            --secondary: #a626ff;
             --text-main: #ffffff;
             --text-muted: #8e87a5;
             --font-headers: 'Orbitron', sans-serif;
             --font-text: 'Rajdhani', sans-serif;
-            --btn-gradient: linear-gradient(90deg, #8a2be2 0%, #d845ff 100%);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -26,456 +25,538 @@
             background-color: var(--bg-main);
             color: var(--text-main);
             font-family: var(--font-text);
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden;
-            background-image: radial-gradient(circle at 50% 0%, #1e0b3b 0%, transparent 50%);
+            overflow: hidden;
         }
 
-        /* Header */
         header {
-            padding: 20px 40px;
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid var(--primary-glow);
+            background: linear-gradient(180deg, rgba(0,240,255,0.1) 0%, transparent 100%);
         }
-        .logo { font-family: var(--font-headers); font-size: 24px; font-weight: 700; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; }
-        .logo span { color: var(--primary); }
+        
+        .logo { font-family: var(--font-headers); font-size: 22px; font-weight: 700; text-shadow: 0 0 10px var(--primary); }
+        .logo span { color: var(--secondary); text-shadow: 0 0 10px var(--secondary); }
 
-        /* Main Workspace */
-        .workspace {
-            display: flex;
-            flex: 1;
-            padding: 20px;
-            gap: 20px;
-            height: calc(100vh - 120px);
+        .btn { 
+            padding: 10px 25px; border: none; border-radius: 5px; font-family: var(--font-headers); font-weight: 700; 
+            font-size: 14px; cursor: pointer; text-transform: uppercase; transition: 0.2s; 
         }
+        .btn-glow { 
+            background: var(--primary); color: #000; box-shadow: 0 0 15px var(--primary-glow); 
+        }
+        .btn-glow:hover { box-shadow: 0 0 25px var(--primary); transform: scale(1.02); }
 
-        /* Sidebar - Settings */
+        .workspace { display: flex; flex: 1; height: calc(100vh - 65px); }
+
+        /* Левая панель настроек */
         .sidebar {
-            width: 400px;
+            width: 450px;
             background: var(--bg-panel);
-            border-radius: 20px;
             padding: 20px;
             overflow-y: auto;
-            border: 1px solid rgba(166, 38, 255, 0.2);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-right: 1px solid rgba(255,255,255,0.05);
         }
-
-        .sidebar::-webkit-scrollbar { width: 8px; }
-        .sidebar::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
-
-        .section-title { font-family: var(--font-headers); font-size: 16px; margin-bottom: 15px; color: var(--secondary); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 5px; }
-
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-size: 14px; color: var(--text-muted); }
-        .form-group input[type="text"], .form-group select {
-            width: 100%; padding: 10px; background: var(--bg-panel-light); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-family: var(--font-text); outline: none; transition: 0.3s;
-        }
-        .form-group input[type="text"]:focus { border-color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
-        .form-group input[type="color"] { width: 100%; height: 40px; border: none; border-radius: 8px; background: transparent; cursor: pointer; }
         
-        .file-upload { position: relative; overflow: hidden; display: inline-block; width: 100%; }
-        .file-upload input[type="file"] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
-        .file-upload-btn { display: block; width: 100%; padding: 10px; text-align: center; background: rgba(255,255,255,0.05); border: 1px dashed var(--primary); border-radius: 8px; color: var(--primary); transition: 0.3s; }
-        .file-upload:hover .file-upload-btn { background: rgba(166, 38, 255, 0.1); }
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--secondary); border-radius: 3px; }
 
-        /* Preview Area */
+        .section { background: rgba(0,0,0,0.3); border: 1px solid var(--primary-glow); border-radius: 10px; padding: 15px; margin-bottom: 20px; }
+        .section-title { font-family: var(--font-headers); font-size: 16px; margin-bottom: 15px; color: var(--primary); display: flex; align-items: center; gap: 10px;}
+        .section-title::before { content: '>'; color: var(--secondary); }
+
+        .form-row { display: flex; gap: 10px; margin-bottom: 12px; }
+        .form-group { flex: 1; display: flex; flex-direction: column; }
+        .form-group label { font-size: 13px; color: var(--text-muted); margin-bottom: 5px; }
+        
+        input[type="text"], input[type="number"], textarea, select {
+            width: 100%; padding: 10px; background: var(--bg-input); border: 1px solid rgba(255,255,255,0.1); 
+            color: white; border-radius: 5px; font-family: var(--font-text); font-size: 15px; outline: none;
+        }
+        input:focus, textarea:focus { border-color: var(--primary); }
+        
+        textarea { resize: vertical; min-height: 120px; font-family: monospace; font-size: 13px; line-height: 1.5; }
+        
+        .hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; font-style: italic; }
+
+        .file-btn { display: block; width: 100%; padding: 10px; text-align: center; background: rgba(166, 38, 255, 0.1); border: 1px dashed var(--secondary); border-radius: 5px; color: var(--secondary); cursor: pointer; position: relative; }
+        .file-btn input[type="file"] { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+        input[type="range"] { accent-color: var(--primary); width: 100%; }
+
+        /* Правая панель предпросмотра */
         .preview-area {
             flex: 1;
+            padding: 20px;
+            background: #000;
             display: flex;
             flex-direction: column;
-            background: var(--bg-panel);
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-            overflow: hidden;
-            position: relative;
+        }
+        
+        .preview-header { color: var(--text-muted); font-family: var(--font-headers); margin-bottom: 10px; display: flex; justify-content: space-between;}
+        
+        #game-preview { 
+            width: 100%; height: 100%; border: 2px solid var(--primary-glow); 
+            border-radius: 10px; background: var(--bg-main); box-shadow: 0 0 30px rgba(0,0,0,0.8);
         }
 
-        .preview-header { padding: 15px 20px; background: rgba(0,0,0,0.2); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        
-        .btn { padding: 10px 20px; border: none; border-radius: 30px; font-family: var(--font-headers); font-weight: 700; font-size: 14px; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        .btn-glow { background: var(--btn-gradient); color: white; box-shadow: 0 0 15px var(--primary-glow); }
-        .btn-glow:hover { box-shadow: 0 0 25px var(--primary); transform: translateY(-2px); }
-        .btn-outline { background: transparent; border: 2px solid var(--secondary); color: var(--secondary); box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }
-        .btn-outline:hover { background: var(--secondary); color: var(--bg-main); }
-
-        .iframe-container { flex: 1; padding: 20px; display: flex; justify-content: center; align-items: center; background: #000; }
-        #game-preview { width: 100%; max-width: 800px; height: 100%; max-height: 600px; border: 2px solid rgba(255,255,255,0.1); border-radius: 10px; background: #222; }
-
-        /* Footer */
-        footer { text-align: center; padding: 15px; font-size: 12px; color: rgba(255,255,255,0.3); letter-spacing: 1px; }
-
-        /* Added item block */
-        .item-block { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid var(--secondary); }
+        .items-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .item-thumb { width: 60px; height: 60px; background: rgba(0,0,0,0.5); border: 1px solid var(--secondary); border-radius: 5px; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+        .item-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .item-thumb .del-btn { position: absolute; top:0; right:0; background: red; color: white; border: none; width: 20px; height: 20px; cursor: pointer; font-size: 10px; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">EDU<span>GAME</span>BUILDER</div>
-        <div>
-            <button class="btn btn-outline" onclick="testDrive()">Тест-драйв</button>
-            <button class="btn btn-glow" id="copyBtn" onclick="generateAndCopyCode()">Скопировать код</button>
-        </div>
+        <div class="logo">EDU<span>GAME</span></div>
+        <button class="btn btn-glow" id="copyBtn" onclick="exportForGenially()">Скопировать код для Genially</button>
     </header>
 
     <div class="workspace">
-        <!-- Настройки (Левая панель) -->
+        <!-- ЛЕВАЯ ПАНЕЛЬ -->
         <div class="sidebar">
-            <div class="section-title">Дизайн игры</div>
-            <div style="display: flex; gap: 10px;">
-                <div class="form-group" style="flex: 1;">
-                    <label>Цвет фона</label>
-                    <input type="color" id="col-bg" value="#0a0518" onchange="updatePreview()">
+            
+            <div class="section">
+                <div class="section-title">Тексты и настройки</div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <input type="text" id="cfg-title" value="Математическая Одежда" placeholder="Название игры" oninput="debounceUpdate()">
                 </div>
-                <div class="form-group" style="flex: 1;">
-                    <label>Цвет кнопок</label>
-                    <input type="color" id="col-btn" value="#9b2cff" onchange="updatePreview()">
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <input type="text" id="cfg-desc" value="Одень персонажа, решая задачи!" placeholder="Описание" oninput="debounceUpdate()">
                 </div>
-                <div class="form-group" style="flex: 1;">
-                    <label>Цвет свечения</label>
-                    <input type="color" id="col-glow" value="#00f0ff" onchange="updatePreview()">
+                <div class="form-row">
+                    <div class="form-group"><label>Кнопка старта</label><input type="text" id="cfg-btnPlay" value="ИГРАТЬ" oninput="debounceUpdate()"></div>
+                    <div class="form-group"><label>Текст победы</label><input type="text" id="cfg-txtWin" value="ОТЛИЧНАЯ РАБОТА!" oninput="debounceUpdate()"></div>
                 </div>
-            </div>
-
-            <div class="section-title">Изображения</div>
-            <div class="form-group">
-                <label>Фон игры (опционально)</label>
-                <div class="file-upload">
-                    <span class="file-upload-btn" id="lbl-bg">Загрузить фон</span>
-                    <input type="file" accept="image/*" onchange="handleImageUpload(this, 'img-bg', 'lbl-bg')">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Персонаж (в одежде - База)</label>
-                <div class="file-upload">
-                    <span class="file-upload-btn" id="lbl-char">Загрузить персонажа</span>
-                    <input type="file" accept="image/*" onchange="handleImageUpload(this, 'img-char', 'lbl-char')">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Картинка Победы</label>
-                <div class="file-upload">
-                    <span class="file-upload-btn" id="lbl-win">Загрузить победу</span>
-                    <input type="file" accept="image/*" onchange="handleImageUpload(this, 'img-win', 'lbl-win')">
+                <div class="form-row">
+                    <div class="form-group"><label>Жизни (0 - бесконечно)</label><input type="number" id="cfg-lives" value="3" min="0" oninput="debounceUpdate()"></div>
+                    <div class="form-group"><label>Таймер (сек, 0 - выкл)</label><input type="number" id="cfg-time" value="60" min="0" oninput="debounceUpdate()"></div>
                 </div>
             </div>
 
-            <div class="section-title">Элементы одежды и задания</div>
-            <div id="items-container">
-                <!-- Сюда добавляются вещи -->
+            <div class="section">
+                <div class="section-title">Графика</div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <div class="file-btn" id="lbl-bg">1. Фон игры (на весь экран)<input type="file" accept="image/*" onchange="processImg(this, 'bg')"></div>
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <div class="file-btn" id="lbl-char">2. Персонаж в одежде (Подсказка)<input type="file" accept="image/*" onchange="processImg(this, 'char')"></div>
+                </div>
+                <div class="form-group">
+                    <label>Прозрачность персонажа: <span id="op-val">40%</span></label>
+                    <input type="range" id="cfg-opacity" min="10" max="100" value="40" oninput="document.getElementById('op-val').innerText = this.value+'%'; debounceUpdate()">
+                </div>
             </div>
-            <button class="btn btn-outline" style="width: 100%; margin-top: 10px; font-size: 12px;" onclick="addClothingItem()">+ Добавить элемент одежды</button>
+
+            <div class="section">
+                <div class="section-title">Вопросы (MathJax $)</div>
+                <textarea id="cfg-questions" oninput="debounceUpdate()">Сколько будет 2+2? | 4 | 5 | 6
+Вычислите $\frac{10}{2}$: | 5
+Что такое $x$, если $x+2=4$? | 2 | 4 | -2
+Столица Франции? | Париж | Лондон | Рим</textarea>
+                <div class="hint">
+                    Формат для выбора: Вопрос | Прав.Ответ | Неверный 1 | Неверный 2<br>
+                    Формат ввода текста: Вопрос | Прав.Ответ
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Элементы одежды (PNG без фона)</div>
+                <div class="file-btn">Добавить элемент одежды<input type="file" accept="image/png, image/webp" onchange="addClothingItem(this)"></div>
+                <div class="items-grid" id="items-container"></div>
+                <div class="hint">Ученик будет перетаскивать эти элементы на персонажа. При перетаскивании появится случайный вопрос из списка выше.</div>
+            </div>
+            
+            <div style="text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 20px;">
+                © Гальмиз Мария Александровна
+            </div>
         </div>
 
-        <!-- Предпросмотр (Правая панель) -->
+        <!-- ПРАВАЯ ПАНЕЛЬ -->
         <div class="preview-area">
             <div class="preview-header">
-                <span style="font-family: var(--font-headers); color: var(--secondary);">Live Preview</span>
+                <span>LIVE ПРЕДПРОСМОТР (ТЕСТ-ДРАЙВ)</span>
             </div>
-            <div class="iframe-container">
-                <!-- Окно где будет крутиться игра -->
-                <iframe id="game-preview" srcdoc="<h2 style='color:white; text-align:center; font-family:sans-serif; margin-top: 20%;'>Загрузите изображения и добавьте элементы в левой панели для отображения игры.</h2>"></iframe>
-            </div>
+            <iframe id="game-preview"></iframe>
         </div>
     </div>
 
-    <footer>
-        Все права защищены и принадлежат Гальмиз Марии Александровне
-    </footer>
-
     <script>
-        // Хранилище данных игры
         let gameData = {
-            images: {
-                'img-bg': '',
-                'img-char': '',
-                'img-win': ''
-            },
+            imgBg: '',
+            imgChar: '',
             items: []
         };
+        
+        let updateTimeout;
 
-        // Функция сжатия изображений (чтобы код iframe не был огромным)
-        function handleImageUpload(input, key, labelId) {
+        // Сжатие картинок
+        function processImg(input, key) {
             const file = input.files[0];
             if (!file) return;
-
-            document.getElementById(labelId).innerText = "Загрузка...";
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    // Максимальная ширина для сжатия
-                    const MAX_WIDTH = 600;
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > MAX_WIDTH) {
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // Конвертируем в компактный WebP (Качество 0.7)
-                    gameData.images[key] = canvas.toDataURL('image/webp', 0.7);
-                    document.getElementById(labelId).innerText = "Загружено ✓";
-                    document.getElementById(labelId).style.borderColor = "#00f0ff";
-                    document.getElementById(labelId).style.color = "#00f0ff";
-                    updatePreview();
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function handleItemImage(input, index) {
-             const file = input.files[0];
-            if (!file) return;
-            const label = input.previousElementSibling;
-            label.innerText = "Сжатие...";
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width > 300 ? 300 : img.width;
-                    canvas.height = img.height * (canvas.width / img.width);
-                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    gameData.items[index].img = canvas.toDataURL('image/webp', 0.7);
-                    label.innerText = "Загружено ✓";
-                    label.style.color = "#00f0ff";
-                    updatePreview();
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // Управление элементами одежды
-        function addClothingItem() {
-            const index = gameData.items.length;
-            gameData.items.push({
-                img: '',
-                taskType: 'text',
-                question: 'Как называется этот элемент?',
-                answer: ''
-            });
-            renderItems();
-        }
-
-        function updateItem(index, field, value) {
-            gameData.items[index][field] = value;
-            updatePreview();
-        }
-
-        function renderItems() {
-            const container = document.getElementById('items-container');
-            container.innerHTML = '';
-            gameData.items.forEach((item, index) => {
-                container.innerHTML += `
-                    <div class="item-block">
-                        <div style="font-weight:bold; color:var(--primary); margin-bottom: 5px;">Элемент ${index + 1}</div>
-                        
-                        <div class="file-upload" style="margin-bottom: 10px;">
-                            <span class="file-upload-btn" style="padding: 5px; font-size: 12px;">Картинка одежды (png без фона)</span>
-                            <input type="file" accept="image/png, image/webp" onchange="handleItemImage(this, ${index})">
-                        </div>
-
-                        <div class="form-group" style="margin-bottom: 5px;">
-                            <select onchange="updateItem(${index}, 'taskType', this.value)" style="padding: 5px; font-size:12px;">
-                                <option value="text" ${item.taskType === 'text' ? 'selected' : ''}>Ввод ответа текстом</option>
-                                <option value="choice" ${item.taskType === 'choice' ? 'selected' : ''}>Выбор из вариантов</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="margin-bottom: 5px;">
-                            <input type="text" placeholder="Вопрос" value="${item.question}" onkeyup="updateItem(${index}, 'question', this.value)" style="padding: 5px; font-size:12px;">
-                        </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <input type="text" placeholder="Правильный ответ (или варианты через запятую)" value="${item.answer}" onkeyup="updateItem(${index}, 'answer', this.value)" style="padding: 5px; font-size:12px;">
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        // Генерация движка игры (HTML String)
-        function generateGameHTML() {
-            const bgHex = document.getElementById('col-bg').value;
-            const btnHex = document.getElementById('col-btn').value;
-            const glowHex = document.getElementById('col-glow').value;
+            const label = input.parentElement;
+            label.innerText = "Загрузка...";
             
-            // Заглушка, если база не загружена
-            if(!gameData.images['img-char']) {
-                return `<div style="color:white;text-align:center;font-family:sans-serif;margin-top:20%;">Сначала загрузите изображение персонажа в настройках.</div>`;
-            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = key === 'bg' ? 1000 : 400; // Жмем сильнее для Genially
+                    let width = img.width, height = img.height;
+                    
+                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    canvas.width = width; canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    
+                    if(key === 'bg') gameData.imgBg = canvas.toDataURL('image/jpeg', 0.6);
+                    if(key === 'char') gameData.imgChar = canvas.toDataURL('image/webp', 0.8);
+                    
+                    label.innerHTML = `Загружено ✓ <input type="file" accept="image/*" onchange="processImg(this, '${key}')">`;
+                    label.style.borderColor = "#00f0ff"; label.style.color = "#00f0ff";
+                    updatePreview();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
 
-            // Формируем HTML для элементов
-            let itemsHtml = '';
-            let jsItemsData = [];
-            gameData.items.forEach((item, i) => {
-                if(item.img) {
-                    itemsHtml += `<img src="${item.img}" class="draggable-item" id="item-${i}" data-id="${i}" style="left: ${10 + (i*15)}%; top: 80%;">`;
-                    jsItemsData.push({ id: i, taskType: item.taskType, question: item.question, answer: item.answer });
+        // Добавление одежды
+        function addClothingItem(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    if(w > 250) { h *= 250/w; w = 250; }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    
+                    gameData.items.push(canvas.toDataURL('image/webp', 0.8));
+                    renderItemsList();
+                    updatePreview();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            input.value = '';
+        }
+
+        function renderItemsList() {
+            const cont = document.getElementById('items-container');
+            cont.innerHTML = '';
+            gameData.items.forEach((base64, idx) => {
+                cont.innerHTML += `<div class="item-thumb"><img src="${base64}"><button class="del-btn" onclick="gameData.items.splice(${idx},1); renderItemsList(); updatePreview()">X</button></div>`;
+            });
+        }
+
+        // Задержка обновления чтоб не лагало при вводе текста
+        function debounceUpdate() {
+            clearTimeout(updateTimeout);
+            updateTimeout = setTimeout(updatePreview, 500);
+        }
+
+        // ГЕНЕРАТОР КОДА ИГРЫ
+        function getGameHTML() {
+            const title = document.getElementById('cfg-title').value;
+            const desc = document.getElementById('cfg-desc').value;
+            const btnPlay = document.getElementById('cfg-btnPlay').value;
+            const txtWin = document.getElementById('cfg-txtWin').value;
+            const lives = document.getElementById('cfg-lives').value;
+            const time = document.getElementById('cfg-time').value;
+            const opacity = document.getElementById('cfg-opacity').value / 100;
+            
+            // Парсинг вопросов
+            const rawQ = document.getElementById('cfg-questions').value.split('\n');
+            let parsedQuestions = [];
+            rawQ.forEach(line => {
+                if(line.trim() !== '') {
+                    const parts = line.split('|').map(s => s.trim());
+                    if(parts.length >= 2) parsedQuestions.push(parts);
                 }
             });
 
-            // Сам код игры (HTML + CSS + JS в одном флаконе)
+            // Формируем HTML одежды
+            let htmlItems = '';
+            gameData.items.forEach((item, i) => {
+                // Располагаем вещи внизу экрана по горизонтали
+                htmlItems += `<img src="${item}" class="item" id="item-${i}" style="left:${10 + (i * 15)}%; top:80%;">`;
+            });
+
             return `
             <!DOCTYPE html>
             <html>
             <head>
+                <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"><\/script>
                 <style>
-                    body { 
-                        margin: 0; padding: 0; 
-                        background-color: ${bgHex}; 
-                        background-image: url('${gameData.images['img-bg']}');
-                        background-size: cover; background-position: center;
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        overflow: hidden; user-select: none;
-                    }
-                    .game-container { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
-                    .character { height: 70%; max-height: 800px; object-fit: contain; pointer-events: none; z-index: 1; opacity: 0.5; /* Полупрозрачная подсказка */ }
+                    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap');
+                    body { margin:0; padding:0; background:#000 url('${gameData.imgBg}') no-repeat center center; background-size:cover; font-family:'Rajdhani', sans-serif; overflow:hidden; user-select:none; color:white; height:100vh; width:100vw; }
                     
-                    /* Пунктирные линии для мест */
-                    .drop-zone-overlay {
-                        position: absolute; width: 100%; height: 100%; top:0; left:0; z-index: 2; pointer-events: none;
-                    }
-
-                    .draggable-item { 
-                        position: absolute; width: 100px; cursor: grab; z-index: 10;
-                        filter: drop-shadow(0 0 10px ${glowHex});
-                        transition: transform 0.2s;
-                    }
-                    .draggable-item:active { cursor: grabbing; transform: scale(1.1); }
+                    /* UI */
+                    .top-ui { position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 30px; box-sizing:border-box; z-index:50; pointer-events:none; }
+                    .ui-box { background:rgba(0,0,0,0.7); border:2px solid #00f0ff; border-radius:10px; padding:10px 20px; font-family:'Orbitron', sans-serif; font-size:20px; color:#00f0ff; text-shadow:0 0 10px #00f0ff; }
                     
-                    /* Модальное окно задания */
-                    .modal { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); border: 2px solid ${btnHex}; box-shadow: 0 0 30px ${glowHex}; padding: 30px; border-radius: 20px; z-index: 100; text-align: center; color: white; width: 80%; max-width: 400px; }
-                    .modal h3 { margin-top: 0; color: ${glowHex}; }
-                    .modal input { width: 90%; padding: 10px; margin: 10px 0; border-radius: 10px; border: 1px solid ${btnHex}; background: #222; color: white; text-align: center; }
-                    .btn { background: ${btnHex}; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; box-shadow: 0 0 10px ${glowHex}; font-weight: bold; margin-top:10px; }
+                    /* Game Area */
+                    .char { position:absolute; left:50%; top:45%; transform:translate(-50%, -45%); height:75%; max-height:800px; object-fit:contain; opacity:${opacity}; pointer-events:none; z-index:1; }
+                    .item { position:absolute; height:15%; object-fit:contain; cursor:grab; z-index:10; filter:drop-shadow(0 0 10px #a626ff); transition: transform 0.1s; touch-action: none; }
+                    .item:active { cursor:grabbing; transform:scale(1.1); z-index:100 !important; }
                     
-                    /* Победа */
-                    .win-screen { display: none; position: absolute; top:0; left:0; width: 100%; height: 100%; background: ${bgHex}; z-index: 200; flex-direction: column; justify-content: center; align-items: center; }
-                    .win-screen img { max-height: 50%; margin-bottom: 20px; }
-                    .win-screen h1 { color: ${glowHex}; text-shadow: 0 0 20px ${btnHex}; }
+                    /* Screens */
+                    .screen { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(10,5,24,0.95); z-index:200; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px; box-sizing:border-box; backdrop-filter:blur(5px); }
+                    .screen h1 { font-family:'Orbitron'; font-size:40px; color:#00f0ff; text-shadow:0 0 20px #00f0ff; margin-bottom:10px; }
+                    .screen p { font-size:22px; max-width:600px; margin-bottom:30px; }
+                    .btn { background: linear-gradient(90deg, #a626ff, #d845ff); border:none; padding:15px 40px; border-radius:30px; font-family:'Orbitron'; font-weight:700; font-size:20px; color:white; cursor:pointer; box-shadow:0 0 20px rgba(166,38,255,0.6); text-transform:uppercase; transition:0.2s;}
+                    .btn:hover { transform:scale(1.05); box-shadow:0 0 30px #00f0ff; }
+                    
+                    /* Modal Question */
+                    .modal-overlay { display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:150; justify-content:center; align-items:center; }
+                    .modal { background:#110920; border:2px solid #a626ff; box-shadow:0 0 40px rgba(166,38,255,0.5); padding:30px; border-radius:15px; width:90%; max-width:500px; text-align:center; }
+                    .modal h2 { color:#00f0ff; margin-top:0; font-family:'Orbitron'; font-size:24px; }
+                    .q-text { font-size:22px; margin-bottom:20px; }
+                    
+                    .ans-grid { display:flex; flex-direction:column; gap:10px; }
+                    .ans-btn { background:rgba(255,255,255,0.1); border:1px solid #00f0ff; padding:12px; color:white; font-size:18px; cursor:pointer; border-radius:8px; font-family:'Rajdhani'; transition:0.2s; }
+                    .ans-btn:hover { background:rgba(0,240,255,0.2); }
+                    .text-input { width:100%; padding:12px; font-size:18px; border-radius:8px; border:1px solid #00f0ff; background:#000; color:white; box-sizing:border-box; margin-bottom:10px;text-align:center;}
+                    
+                    #wrongMsg { color:#ff3366; font-weight:bold; margin-top:15px; display:none; text-shadow: 0 0 10px red; }
                 </style>
             </head>
             <body>
-                <div class="game-container" id="gameArea">
-                    <img src="${gameData.images['img-char']}" class="character" id="mainChar">
-                    ${itemsHtml}
+                <!-- Screens -->
+                <div class="screen" id="startScreen">
+                    <h1>${title}</h1>
+                    <p>${desc}</p>
+                    <button class="btn" onclick="startGame()">${btnPlay}</button>
+                </div>
+                
+                <div class="screen" id="endScreen" style="display:none;">
+                    <h1 id="endTitle"></h1>
+                    <button class="btn" onclick="location.reload()">НАЧАТЬ ЗАНОВО</button>
                 </div>
 
-                <div class="modal" id="taskModal">
-                    <h3 id="taskQuestion">Задание</h3>
-                    <div id="taskInputArea"></div>
-                    <button class="btn" onclick="checkAnswer()">Ответить</button>
-                    <p id="errorMsg" style="color:#ff4444; font-size: 12px; display:none;">Неверно, попробуй еще!</p>
+                <!-- Game UI -->
+                <div class="top-ui" id="gameUI" style="display:none;">
+                    ${time > 0 ? `<div class="ui-box">⏱ <span id="timerTxt">${time}</span></div>` : '<div></div>'}
+                    ${lives > 0 ? `<div class="ui-box">❤ <span id="livesTxt">${lives}</span></div>` : '<div></div>'}
                 </div>
 
-                <div class="win-screen" id="winScreen">
-                    ${gameData.images['img-win'] ? `<img src="${gameData.images['img-win']}">` : ''}
-                    <h1>ОТЛИЧНАЯ РАБОТА!</h1>
-                    <button class="btn" onclick="location.reload()">ПЕРЕЗАПУСТИТЬ ИГРУ</button>
+                <!-- Play Area -->
+                <div id="playArea" style="display:none; width:100%; height:100%; position:absolute; top:0;left:0;">
+                    ${gameData.imgChar ? `<img src="${gameData.imgChar}" class="char" id="baseChar">` : ''}
+                    ${htmlItems}
+                </div>
+
+                <!-- Question Modal -->
+                <div class="modal-overlay" id="qModal">
+                    <div class="modal">
+                        <h2>ВОПРОС</h2>
+                        <div class="q-text" id="qText"></div>
+                        <div class="ans-grid" id="ansContainer"></div>
+                        <div id="wrongMsg">НЕВЕРНО! ПОПРОБУЙ ЕЩЕ РАЗ.</div>
+                    </div>
                 </div>
 
                 <script>
-                    const itemsData = ${JSON.stringify(jsItemsData)};
-                    let currentDrag = null;
-                    let currentTaskItem = null;
-                    let itemsPlaced = 0;
+                    // Audio Synth (без внешних файлов)
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    function playSound(type) {
+                        if(audioCtx.state === 'suspended') audioCtx.resume();
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain); gain.connect(audioCtx.destination);
+                        
+                        if(type === 'win') {
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                            osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+                        } else {
+                            osc.type = 'sawtooth';
+                            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                        }
+                    }
 
-                    // Простая логика Drag & Drop
-                    document.querySelectorAll('.draggable-item').forEach(item => {
-                        item.addEventListener('pointerdown', (e) => {
-                            currentDrag = item;
-                            item.style.zIndex = 1000;
+                    // Game Logic Variables
+                    let questions = ${JSON.stringify(parsedQuestions)};
+                    let totalItems = ${gameData.items.length};
+                    let placedItems = 0;
+                    let curTime = ${time};
+                    let curLives = ${lives};
+                    let timerInt;
+                    let currentDragItem = null;
+                    let currentTargetQuestion = null;
+                    let startX, startY;
+
+                    function startGame() {
+                        if(audioCtx.state === 'suspended') audioCtx.resume();
+                        document.getElementById('startScreen').style.display = 'none';
+                        document.getElementById('gameUI').style.display = 'flex';
+                        document.getElementById('playArea').style.display = 'block';
+                        
+                        if(curTime > 0) {
+                            timerInt = setInterval(() => {
+                                curTime--;
+                                document.getElementById('timerTxt').innerText = curTime;
+                                if(curTime <= 0) gameOver(false);
+                            }, 1000);
+                        }
+                    }
+
+                    function gameOver(isWin) {
+                        clearInterval(timerInt);
+                        document.getElementById('playArea').style.display = 'none';
+                        document.getElementById('gameUI').style.display = 'none';
+                        document.getElementById('endScreen').style.display = 'flex';
+                        document.getElementById('endTitle').innerText = isWin ? '${txtWin}' : 'ВРЕМЯ ИСТЕКЛО / ЖИЗНИ КОНЧИЛИСЬ';
+                        document.getElementById('endTitle').style.color = isWin ? '#00ff00' : '#ff3366';
+                        document.getElementById('endTitle').style.textShadow = isWin ? '0 0 20px #00ff00' : '0 0 20px #ff3366';
+                    }
+
+                    // Управление Drag & Drop (мышь и тач)
+                    const items = document.querySelectorAll('.item');
+                    items.forEach(el => {
+                        el.addEventListener('pointerdown', (e) => {
+                            currentDragItem = el;
+                            startX = el.offsetLeft;
+                            startY = el.offsetTop;
+                            el.setPointerCapture(e.pointerId);
+                        });
+                        
+                        el.addEventListener('pointermove', (e) => {
+                            if(currentDragItem !== el) return;
+                            let newX = e.clientX - el.offsetWidth/2;
+                            let newY = e.clientY - el.offsetHeight/2;
+                            el.style.left = newX + 'px';
+                            el.style.top = newY + 'px';
+                        });
+
+                        el.addEventListener('pointerup', (e) => {
+                            if(currentDragItem !== el) return;
+                            el.releasePointerCapture(e.pointerId);
+                            
+                            // Проверка коллизии с центром экрана (там стоит персонаж)
+                            const char = document.getElementById('baseChar');
+                            if(!char) { currentDragItem = null; return; }
+                            
+                            const cRect = char.getBoundingClientRect();
+                            const iRect = el.getBoundingClientRect();
+                            
+                            // Если предмет брошен поверх персонажа
+                            if(iRect.right > cRect.left && iRect.left < cRect.right && 
+                               iRect.bottom > cRect.top && iRect.top < cRect.bottom) {
+                                
+                                triggerQuestion(el);
+                            } else {
+                                // Возврат на старт
+                                el.style.left = startX + 'px';
+                                el.style.top = startY + 'px';
+                                currentDragItem = null;
+                            }
                         });
                     });
 
-                    document.addEventListener('pointermove', (e) => {
-                        if (!currentDrag) return;
-                        currentDrag.style.left = (e.clientX - currentDrag.offsetWidth / 2) + 'px';
-                        currentDrag.style.top = (e.clientY - currentDrag.offsetHeight / 2) + 'px';
-                    });
-
-                    document.addEventListener('pointerup', (e) => {
-                        if (!currentDrag) return;
-                        
-                        // Имитация "Попадания на персонажа" (упрощенная коллизия по центру экрана)
-                        const charRect = document.getElementById('mainChar').getBoundingClientRect();
-                        const itemRect = currentDrag.getBoundingClientRect();
-                        
-                        // Если бросили примерно в область персонажа
-                        if(itemRect.left > charRect.left - 50 && itemRect.right < charRect.right + 50 && 
-                           itemRect.top > charRect.top - 50 && itemRect.bottom < charRect.bottom + 50) {
-                            
-                            showTask(currentDrag);
-                        } else {
-                            currentDrag.style.zIndex = 10;
-                            currentDrag = null;
+                    function triggerQuestion(itemEl) {
+                        if(questions.length === 0) {
+                            // Если вопросы кончились - просто ставим
+                            successItem(itemEl);
+                            return;
                         }
-                    });
-
-                    function showTask(itemElement) {
-                        const id = itemElement.getAttribute('data-id');
-                        currentTaskItem = { el: itemElement, data: itemsData.find(i => i.id == id) };
                         
-                        document.getElementById('taskQuestion').innerText = currentTaskItem.data.question;
-                        const inputArea = document.getElementById('taskInputArea');
+                        // Берем случайный вопрос
+                        const qIdx = Math.floor(Math.random() * questions.length);
+                        currentTargetQuestion = questions[qIdx];
                         
-                        if(currentTaskItem.data.taskType === 'text') {
-                            inputArea.innerHTML = '<input type="text" id="answerInput" placeholder="Введите ответ">';
+                        document.getElementById('qText').innerHTML = currentTargetQuestion[0];
+                        const container = document.getElementById('ansContainer');
+                        container.innerHTML = '';
+                        document.getElementById('wrongMsg').style.display = 'none';
+                        
+                        // Если это текстовый ввод
+                        if(currentTargetQuestion.length === 2) {
+                            container.innerHTML = \`<input type="text" id="tInput" class="text-input" placeholder="Ваш ответ...">
+                                                   <button class="btn" style="width:100%" onclick="checkTextAns()">ОТВЕТИТЬ</button>\`;
                         } else {
-                            // Логика мультивыбора на основе запятых
-                            const variants = currentTaskItem.data.answer.split(',').map(s=>s.trim());
-                            let btns = '';
-                            variants.forEach(v => {
-                                btns += \`<button class="btn" style="display:block; width:100%; margin-bottom:5px; background:#444;" onclick="document.getElementById('answerInput').value='\`+v+\`'">\`+v+\`</button>\`;
+                            // Мультивыбор
+                            let answers = currentTargetQuestion.slice(1);
+                            // Перемешиваем
+                            for (let i = answers.length - 1; i > 0; i--) {
+                                const j = Math.floor(Math.random() * (i + 1));
+                                [answers[i], answers[j]] = [answers[j], answers[i]];
+                            }
+                            answers.forEach(a => {
+                                container.innerHTML += \`<button class="ans-btn" onclick="checkBtnAns('\`+a+\`')">\`+a+\`</button>\`;
                             });
-                            inputArea.innerHTML = btns + '<input type="hidden" id="answerInput" value="">';
                         }
-
-                        document.getElementById('taskModal').style.display = 'block';
-                        document.getElementById('errorMsg').style.display = 'none';
-                        currentDrag = null; // Отпускаем мышь
+                        
+                        document.getElementById('qModal').style.display = 'flex';
+                        if(window.MathJax) MathJax.typeset();
                     }
 
-                    function checkAnswer() {
-                        const input = document.getElementById('answerInput').value.trim().toLowerCase();
-                        // Берем первый правильный ответ до запятой
-                        const correct = currentTaskItem.data.answer.split(',')[0].trim().toLowerCase();
+                    function checkTextAns() {
+                        const val = document.getElementById('tInput').value.trim().toLowerCase();
+                        const correct = currentTargetQuestion[1].trim().toLowerCase();
+                        if(val === correct) handleWin();
+                        else handleLose();
+                    }
+                    
+                    function checkBtnAns(val) {
+                        if(val === currentTargetQuestion[1]) handleWin();
+                        else handleLose();
+                    }
+
+                    function handleWin() {
+                        playSound('win');
+                        document.getElementById('qModal').style.display = 'none';
+                        successItem(currentDragItem);
+                    }
+
+                    function handleLose() {
+                        playSound('lose');
+                        document.getElementById('wrongMsg').style.display = 'block';
                         
-                        if(input === correct) {
-                            document.getElementById('taskModal').style.display = 'none';
-                            // Фиксируем элемент (в реальной игре тут нужны точные координаты, в демо ставим по центру)
-                            currentTaskItem.el.style.pointerEvents = 'none';
-                            currentTaskItem.el.style.filter = 'drop-shadow(0 0 20px #00ff00)';
-                            itemsPlaced++;
-                            
-                            if(itemsPlaced >= itemsData.length) {
-                                setTimeout(() => {
-                                    document.getElementById('winScreen').style.display = 'flex';
-                                }, 500);
+                        if(curLives > 0) {
+                            curLives--;
+                            document.getElementById('livesTxt').innerText = curLives;
+                            if(curLives <= 0) {
+                                document.getElementById('qModal').style.display = 'none';
+                                gameOver(false);
+                                return;
                             }
-                        } else {
-                            document.getElementById('errorMsg').style.display = 'block';
-                            // Возвращаем вещь на старт если неверно
-                            currentTaskItem.el.style.top = '80%';
-                            currentTaskItem.el.style.left = '10%';
-                            setTimeout(() => { document.getElementById('taskModal').style.display = 'none'; }, 1000);
+                        }
+                        
+                        setTimeout(() => {
+                            document.getElementById('qModal').style.display = 'none';
+                            currentDragItem.style.left = startX + 'px';
+                            currentDragItem.style.top = startY + 'px';
+                            currentDragItem = null;
+                        }, 1000);
+                    }
+
+                    function successItem(el) {
+                        el.style.pointerEvents = 'none';
+                        el.style.filter = 'drop-shadow(0 0 20px #00ff00)';
+                        el.style.zIndex = '5';
+                        currentDragItem = null;
+                        placedItems++;
+                        
+                        if(placedItems >= totalItems && totalItems > 0) {
+                            setTimeout(() => gameOver(true), 1000);
                         }
                     }
                 <\/script>
@@ -485,44 +566,37 @@
 
         function updatePreview() {
             const iframe = document.getElementById('game-preview');
-            iframe.srcdoc = generateGameHTML();
+            // Используем srcdoc для рендеринга внутри редактора
+            iframe.srcdoc = getGameHTML();
         }
 
-        function testDrive() {
-            const w = window.open();
-            w.document.write(generateGameHTML());
-        }
+        function exportForGenially() {
+            const rawHTML = getGameHTML();
+            
+            // Заменяем кавычки для безопасной вставки в атрибут srcdoc
+            // Это самый надежный способ внедрить сложный код в Genially "Other/Другое"
+            const escapedHTML = rawHTML
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
 
-        function generateAndCopyCode() {
-            const htmlString = generateGameHTML();
+            const finalIframe = `<iframe srcdoc="${escapedHTML}" width="100%" height="600px" frameborder="0" allowfullscreen></iframe>`;
             
-            // Превращаем HTML в Data URI (Base64) для обхода ограничений Genially
-            const encodedHtml = btoa(unescape(encodeURIComponent(htmlString)));
-            const dataUri = `data:text/html;base64,${encodedHtml}`;
-            
-            // Создаем iframe код
-            const iframeCode = `<iframe src="${dataUri}" width="100%" height="600px" style="border:none; border-radius:15px;" allowfullscreen></iframe>`;
-            
-            // Копируем в буфер обмена
-            navigator.clipboard.writeText(iframeCode).then(() => {
+            navigator.clipboard.writeText(finalIframe).then(() => {
                 const btn = document.getElementById('copyBtn');
-                const originalText = btn.innerText;
-                btn.innerText = "СКОПИРОВАНО ✓";
-                btn.style.background = "#00f0ff";
-                btn.style.color = "#000";
-                
+                btn.innerText = "СКОПИРОВАНО! ВСТАВЬТЕ В GENIALLY";
+                btn.style.background = "#00ff00";
                 setTimeout(() => {
-                    btn.innerText = originalText;
-                    btn.style.background = "var(--btn-gradient)";
-                    btn.style.color = "white";
-                }, 3000);
-            }).catch(err => {
-                alert('Ошибка копирования: ' + err);
+                    btn.innerText = "Скопировать код для Genially";
+                    btn.style.background = "var(--primary)";
+                }, 4000);
             });
         }
 
-        // Инициализация
-        updatePreview();
+        // Инициализация при старте
+        window.onload = updatePreview;
     </script>
 </body>
 </html>
