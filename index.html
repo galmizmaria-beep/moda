@@ -47,7 +47,10 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 <body>
 <header>
 <div class="logo">EDU<span>GAME</span></div>
+<div style="display:flex;align-items:center;gap:15px">
+<span id="sizeIndicator" style="font-size:12px;color:var(--text-muted)"></span>
 <button class="btn btn-glow" id="copyBtn" onclick="exportForGenially()">Скопировать код для Genially</button>
+</div>
 </header>
 <div class="workspace">
 <div class="sidebar">
@@ -234,6 +237,7 @@ const label=input.parentElement;label.style.color='#00f0ff';
 const reader=new FileReader();
 reader.onload=e=>{const img=new Image();img.onload=()=>{
 const canvas=document.createElement('canvas');
+// Снижаем MAX и качество для успешного экспорта в Genially
 const MAX=(key==='bg'||key==='titleBg')?800:300;
 let w=img.width,h=img.height;
 if(w>MAX){h*=MAX/w;w=MAX}
@@ -324,8 +328,8 @@ function buildGameDoc(editorMode){
 return `<!DOCTYPE html><html><head><meta charset="UTF-8">
 <script>
 window.MathJax={tex:{inlineMath:[['$','$']]},svg:{fontCache:'global'}};
-</${'script'}>
-<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></${'script'}>
+<\/script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"><\/script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&family=Roboto:wght@500;700&family=Montserrat:wght@700&family=Oswald:wght@700&family=Caveat:wght@700&family=Pacifico&display=swap');
 *, button, input { font-family: inherit; }
@@ -428,18 +432,15 @@ function applyConfig(){
 L=LANGS[CFG.lang]||LANGS.ru;
 document.body.style.fontFamily = CFG.titleFont;
 
-// Фон
 const bg=document.getElementById('bgLayer');
 bg.style.backgroundImage=CFG.imgBg?'url('+CFG.imgBg+')':'none';
 bg.style.background=CFG.imgBg?bg.style.background:'#06020c';
 if(CFG.imgBg)bg.style.backgroundImage='url('+CFG.imgBg+')';
 
-// Персонаж
 const char=document.getElementById('baseChar');
 if(CFG.imgChar){char.src=CFG.imgChar;char.style.display='block';char.style.opacity=CFG.opacity;}
 else char.style.display='none';
 
-// UI жизни/таймер
 const tb=document.getElementById('timerBox');
 tb.style.display=CFG.time>0?'block':'none';
 tb.style.border='2px solid '+CFG.timerColor;
@@ -451,7 +452,6 @@ lb.style.border='2px solid '+CFG.livesColor;
 lb.style.color=CFG.livesColor;
 lb.style.textShadow='0 0 10px '+CFG.livesColor;
 
-// Стиль плашки
 const mb=document.getElementById('modalBox');
 mb.style.background=CFG.modalBg;
 mb.style.border='2px solid '+CFG.modalGlow;
@@ -459,7 +459,6 @@ mb.style.boxShadow='0 0 40px '+CFG.modalGlow;
 document.getElementById('qTitle').style.color=CFG.modalGlow;
 document.getElementById('qTitle').innerText=L.q;
 
-// Титульный экран
 buildStartScreen();
 
 if(EDITOR){
@@ -470,7 +469,6 @@ document.getElementById('playArea').style.display='none';
 document.getElementById('startScreen').style.display='none';
 document.getElementById('playArea').style.display='block';
 }
-// В редакторе ВСЕГДА показываем таймер и жизни для настройки
 document.getElementById('gameUI').style.display='flex';
 document.getElementById('livesTxt').innerText=CFG.lives>0?Array(CFG.lives).fill(CFG.lifeIcon).join(''):'';
 document.getElementById('timerTxt').innerText=CFG.time>0?CFG.time:'';
@@ -525,9 +523,9 @@ m.style.left=x+'%';m.style.top=y+'%';
 CFG.targets[i]={x,y};
 parent.postMessage({type:'targetMoved',index:i,x,y},'*');
 };
-const up=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);};
-window.addEventListener('pointermove',move);
-window.addEventListener('pointerup',up);
+const up=()=>{m.removeEventListener('pointermove',move);m.removeEventListener('pointerup',up);};
+m.addEventListener('pointermove',move);
+m.addEventListener('pointerup',up);
 });
 }
 
@@ -558,12 +556,12 @@ img.style.left=(ev.clientX-r.width/2)+'px';
 img.style.top=(ev.clientY-r.height/2)+'px';
 };
 const up=ev=>{
-window.removeEventListener('pointermove',move);
-window.removeEventListener('pointerup',up);
+img.removeEventListener('pointermove',move);
+img.removeEventListener('pointerup',up);
 checkDrop(img,idx,ev);
 };
-window.addEventListener('pointermove',move);
-window.addEventListener('pointerup',up);
+img.addEventListener('pointermove',move);
+img.addEventListener('pointerup',up);
 });
 }
 
@@ -703,7 +701,7 @@ document.getElementById('restartBtn').style.color=CFG.restartTextColor||'#ffffff
 }
 
 parent.postMessage({type:'ready'},'*');
-</${'script'}>
+<\/script>
 </body></html>`;
 }
 
@@ -715,7 +713,7 @@ iframe.srcdoc=buildGameDoc(true);
 function exportForGenially(){
 const cfg=collectConfig();
 let doc=buildGameDoc(false);
-const inject='<script>CFG='+JSON.stringify(cfg)+';EDITOR=false;applyConfig();</'+'script>';
+const inject='<script>CFG='+JSON.stringify(cfg)+';EDITOR=false;applyConfig();<\/script>';
 doc=doc.replace('</body>',inject+'</body>');
 
 const b64='data:text/html;charset=utf-8;base64,'+btoa(unescape(encodeURIComponent(doc)));
