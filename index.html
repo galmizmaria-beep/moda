@@ -1,602 +1,654 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduGame Builder</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-main: #06020c;
-            --bg-panel: #110920;
-            --bg-input: #1a1033;
-            --primary: #00f0ff;
-            --primary-glow: rgba(0, 240, 255, 0.4);
-            --secondary: #a626ff;
-            --text-main: #ffffff;
-            --text-muted: #8e87a5;
-            --font-headers: 'Orbitron', sans-serif;
-            --font-text: 'Rajdhani', sans-serif;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            font-family: var(--font-text);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        header {
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--primary-glow);
-            background: linear-gradient(180deg, rgba(0,240,255,0.1) 0%, transparent 100%);
-        }
-        
-        .logo { font-family: var(--font-headers); font-size: 22px; font-weight: 700; text-shadow: 0 0 10px var(--primary); }
-        .logo span { color: var(--secondary); text-shadow: 0 0 10px var(--secondary); }
-
-        .btn { 
-            padding: 10px 25px; border: none; border-radius: 5px; font-family: var(--font-headers); font-weight: 700; 
-            font-size: 14px; cursor: pointer; text-transform: uppercase; transition: 0.2s; 
-        }
-        .btn-glow { 
-            background: var(--primary); color: #000; box-shadow: 0 0 15px var(--primary-glow); 
-        }
-        .btn-glow:hover { box-shadow: 0 0 25px var(--primary); transform: scale(1.02); }
-
-        .workspace { display: flex; flex: 1; height: calc(100vh - 65px); }
-
-        /* Левая панель настроек */
-        .sidebar {
-            width: 450px;
-            background: var(--bg-panel);
-            padding: 20px;
-            overflow-y: auto;
-            border-right: 1px solid rgba(255,255,255,0.05);
-        }
-        
-        .sidebar::-webkit-scrollbar { width: 6px; }
-        .sidebar::-webkit-scrollbar-thumb { background: var(--secondary); border-radius: 3px; }
-
-        .section { background: rgba(0,0,0,0.3); border: 1px solid var(--primary-glow); border-radius: 10px; padding: 15px; margin-bottom: 20px; }
-        .section-title { font-family: var(--font-headers); font-size: 16px; margin-bottom: 15px; color: var(--primary); display: flex; align-items: center; gap: 10px;}
-        .section-title::before { content: '>'; color: var(--secondary); }
-
-        .form-row { display: flex; gap: 10px; margin-bottom: 12px; }
-        .form-group { flex: 1; display: flex; flex-direction: column; }
-        .form-group label { font-size: 13px; color: var(--text-muted); margin-bottom: 5px; }
-        
-        input[type="text"], input[type="number"], textarea, select {
-            width: 100%; padding: 10px; background: var(--bg-input); border: 1px solid rgba(255,255,255,0.1); 
-            color: white; border-radius: 5px; font-family: var(--font-text); font-size: 15px; outline: none;
-        }
-        input:focus, textarea:focus { border-color: var(--primary); }
-        
-        textarea { resize: vertical; min-height: 120px; font-family: monospace; font-size: 13px; line-height: 1.5; }
-        
-        .hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; font-style: italic; }
-
-        .file-btn { display: block; width: 100%; padding: 10px; text-align: center; background: rgba(166, 38, 255, 0.1); border: 1px dashed var(--secondary); border-radius: 5px; color: var(--secondary); cursor: pointer; position: relative; }
-        .file-btn input[type="file"] { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-
-        input[type="range"] { accent-color: var(--primary); width: 100%; }
-
-        /* Правая панель предпросмотра */
-        .preview-area {
-            flex: 1;
-            padding: 20px;
-            background: #000;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .preview-header { color: var(--text-muted); font-family: var(--font-headers); margin-bottom: 10px; display: flex; justify-content: space-between;}
-        
-        #game-preview { 
-            width: 100%; height: 100%; border: 2px solid var(--primary-glow); 
-            border-radius: 10px; background: var(--bg-main); box-shadow: 0 0 30px rgba(0,0,0,0.8);
-        }
-
-        .items-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-        .item-thumb { width: 60px; height: 60px; background: rgba(0,0,0,0.5); border: 1px solid var(--secondary); border-radius: 5px; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
-        .item-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .item-thumb .del-btn { position: absolute; top:0; right:0; background: red; color: white; border: none; width: 20px; height: 20px; cursor: pointer; font-size: 10px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduGame Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg-main:#06020c;--bg-panel:#110920;--bg-input:#1a1033;--primary:#00f0ff;--primary-glow:rgba(0,240,255,.4);--secondary:#a626ff;--text-muted:#8e87a5;--font-headers:'Orbitron',sans-serif;--font-text:'Rajdhani',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg-main);color:#fff;font-family:var(--font-text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{padding:15px 30px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--primary-glow);background:linear-gradient(180deg,rgba(0,240,255,.1),transparent)}
+.logo{font-family:var(--font-headers);font-size:22px;font-weight:700;text-shadow:0 0 10px var(--primary)}
+.logo span{color:var(--secondary);text-shadow:0 0 10px var(--secondary)}
+.btn{padding:10px 25px;border:none;border-radius:5px;font-family:var(--font-headers);font-weight:700;font-size:14px;cursor:pointer;text-transform:uppercase;transition:.2s}
+.btn-glow{background:var(--primary);color:#000;box-shadow:0 0 15px var(--primary-glow)}
+.btn-glow:hover{box-shadow:0 0 25px var(--primary);transform:scale(1.02)}
+.workspace{display:flex;flex:1;height:calc(100vh - 65px)}
+.sidebar{width:460px;background:var(--bg-panel);padding:20px;overflow-y:auto;border-right:1px solid rgba(255,255,255,.05)}
+.sidebar::-webkit-scrollbar{width:6px}.sidebar::-webkit-scrollbar-thumb{background:var(--secondary);border-radius:3px}
+.section{background:rgba(0,0,0,.3);border:1px solid var(--primary-glow);border-radius:10px;padding:15px;margin-bottom:20px}
+.section-title{font-family:var(--font-headers);font-size:15px;margin-bottom:15px;color:var(--primary);display:flex;align-items:center;gap:10px}
+.section-title::before{content:'>';color:var(--secondary)}
+.form-row{display:flex;gap:10px;margin-bottom:12px}
+.form-group{flex:1;display:flex;flex-direction:column}
+.form-group label{font-size:12px;color:var(--text-muted);margin-bottom:5px}
+input[type=text],input[type=number],textarea,select{width:100%;padding:9px;background:var(--bg-input);border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:5px;font-family:var(--font-text);font-size:14px;outline:none}
+input:focus,textarea:focus{border-color:var(--primary)}
+textarea{resize:vertical;min-height:110px;font-family:monospace;font-size:13px;line-height:1.5}
+.hint{font-size:11px;color:var(--text-muted);margin-top:5px;font-style:italic}
+.file-btn{display:block;width:100%;padding:10px;text-align:center;background:rgba(166,38,255,.1);border:1px dashed var(--secondary);border-radius:5px;color:var(--secondary);cursor:pointer;position:relative}
+.file-btn input[type=file]{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer}
+input[type=range]{accent-color:var(--primary);width:100%}
+input[type=color]{width:100%;height:35px;border:none;border-radius:5px;background:transparent;cursor:pointer;padding:0}
+.preview-area{flex:1;padding:20px;background:#000;display:flex;flex-direction:column}
+.preview-header{color:var(--text-muted);font-family:var(--font-headers);margin-bottom:10px;font-size:14px}
+#game-preview{width:100%;height:100%;border:2px solid var(--primary-glow);border-radius:10px;background:var(--bg-main)}
+.items-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.item-thumb{width:60px;height:60px;background:rgba(0,0,0,.5);border:1px solid var(--secondary);border-radius:5px;display:flex;justify-content:center;align-items:center;position:relative;overflow:hidden}
+.item-thumb img{max-width:100%;max-height:100%;object-fit:contain}
+.item-thumb .del-btn{position:absolute;top:0;right:0;background:red;color:#fff;border:none;width:18px;height:18px;cursor:pointer;font-size:10px}
+.toggle{display:flex;align-items:center;gap:10px;cursor:pointer}
+.toggle input{width:auto}
+.sub-panel{border-left:2px solid var(--secondary);padding-left:12px;margin-top:10px}
+</style>
 </head>
 <body>
+<header>
+<div class="logo">EDU<span>GAME</span></div>
+<button class="btn btn-glow" id="copyBtn" onclick="exportForGenially()">Скопировать код для Genially</button>
+</header>
+<div class="workspace">
+<div class="sidebar">
 
-    <header>
-        <div class="logo">EDU<span>GAME</span></div>
-        <button class="btn btn-glow" id="copyBtn" onclick="exportForGenially()">Скопировать код для Genially</button>
-    </header>
+<div class="section">
+<div class="section-title">Язык интерфейса</div>
+<select id="cfg-lang" onchange="pushUpdate()">
+<option value="ru">Русский</option>
+<option value="en">English</option>
+<option value="ko">한국어 (Корейский)</option>
+</select>
+</div>
 
-    <div class="workspace">
-        <!-- ЛЕВАЯ ПАНЕЛЬ -->
-        <div class="sidebar">
-            
-            <div class="section">
-                <div class="section-title">Тексты и настройки</div>
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <input type="text" id="cfg-title" value="Математическая Одежда" placeholder="Название игры" oninput="debounceUpdate()">
-                </div>
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <input type="text" id="cfg-desc" value="Одень персонажа, решая задачи!" placeholder="Описание" oninput="debounceUpdate()">
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label>Кнопка старта</label><input type="text" id="cfg-btnPlay" value="ИГРАТЬ" oninput="debounceUpdate()"></div>
-                    <div class="form-group"><label>Текст победы</label><input type="text" id="cfg-txtWin" value="ОТЛИЧНАЯ РАБОТА!" oninput="debounceUpdate()"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label>Жизни (0 - бесконечно)</label><input type="number" id="cfg-lives" value="3" min="0" oninput="debounceUpdate()"></div>
-                    <div class="form-group"><label>Таймер (сек, 0 - выкл)</label><input type="number" id="cfg-time" value="60" min="0" oninput="debounceUpdate()"></div>
-                </div>
-            </div>
+<div class="section">
+<div class="section-title">Титульный лист</div>
+<label class="toggle"><input type="checkbox" id="cfg-useTitle" checked onchange="pushUpdate()"> Использовать титульный лист</label>
+<div class="sub-panel" id="titlePanel">
+<div class="form-group" style="margin:10px 0"><label>Название игры</label><input type="text" id="cfg-title" value="Математическая Одежда" oninput="pushUpdate()"></div>
+<div class="form-group" style="margin-bottom:10px"><label>Описание</label><input type="text" id="cfg-desc" value="Одень персонажа, решая задачи!" oninput="pushUpdate()"></div>
+<div class="form-row">
+<div class="form-group"><label>Цвет названия</label><input type="color" id="cfg-titleColor" value="#00f0ff" oninput="pushUpdate()"></div>
+<div class="form-group"><label>Размер (px)</label><input type="number" id="cfg-titleSize" value="42" oninput="pushUpdate()"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Шрифт названия</label>
+<select id="cfg-titleFont" onchange="pushUpdate()">
+<option value="Orbitron">Orbitron</option>
+<option value="Rajdhani">Rajdhani</option>
+<option value="Arial">Arial</option>
+<option value="Georgia">Georgia</option>
+</select></div>
+<div class="form-group"><label>Анимация названия</label>
+<select id="cfg-titleAnim" onchange="pushUpdate()">
+<option value="none">Нет</option>
+<option value="pulse">Пульсация</option>
+<option value="float">Парение</option>
+<option value="glowAnim">Мерцание</option>
+</select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Цвет кнопки "Играть"</label><input type="color" id="cfg-playBtnColor" value="#a626ff" oninput="pushUpdate()"></div>
+<div class="form-group"><label>Свечение кнопки</label><input type="color" id="cfg-playBtnGlow" value="#d845ff" oninput="pushUpdate()"></div>
+</div>
+<div class="form-group" style="margin-bottom:10px"><label>Текст кнопки</label><input type="text" id="cfg-btnPlay" value="ИГРАТЬ" oninput="pushUpdate()"></div>
+<div class="form-group" style="margin-bottom:10px"><div class="file-btn" id="lbl-titleBg">Фон титульного листа<input type="file" accept="image/*" onchange="processImg(this,'titleBg')"></div></div>
+<div class="form-group"><label>Прозрачность фона: <span id="tbg-val">80%</span></label><input type="range" id="cfg-titleBgOp" min="0" max="100" value="80" oninput="document.getElementById('tbg-val').innerText=this.value+'%';pushUpdate()"></div>
+</div>
+</div>
 
-            <div class="section">
-                <div class="section-title">Графика</div>
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <div class="file-btn" id="lbl-bg">1. Фон игры (на весь экран)<input type="file" accept="image/*" onchange="processImg(this, 'bg')"></div>
-                </div>
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <div class="file-btn" id="lbl-char">2. Персонаж в одежде (Подсказка)<input type="file" accept="image/*" onchange="processImg(this, 'char')"></div>
-                </div>
-                <div class="form-group">
-                    <label>Прозрачность персонажа: <span id="op-val">40%</span></label>
-                    <input type="range" id="cfg-opacity" min="10" max="100" value="40" oninput="document.getElementById('op-val').innerText = this.value+'%'; debounceUpdate()">
-                </div>
-            </div>
+<div class="section">
+<div class="section-title">Геймплей</div>
+<div class="form-row">
+<div class="form-group"><label>Жизни (0=∞)</label><input type="number" id="cfg-lives" value="3" min="0" oninput="pushUpdate()"></div>
+<div class="form-group"><label>Таймер сек (0=выкл)</label><input type="number" id="cfg-time" value="60" min="0" oninput="pushUpdate()"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Цвет таймера</label><input type="color" id="cfg-timerColor" value="#00f0ff" oninput="pushUpdate()"></div>
+<div class="form-group"><label>Цвет рамки жизней</label><input type="color" id="cfg-livesColor" value="#ff3366" oninput="pushUpdate()"></div>
+</div>
+<div class="form-group"><label>Символ жизни</label><input type="text" id="cfg-lifeIcon" value="❤" oninput="pushUpdate()"></div>
+</div>
 
-            <div class="section">
-                <div class="section-title">Вопросы (MathJax $)</div>
-                <textarea id="cfg-questions" oninput="debounceUpdate()">Сколько будет 2+2? | 4 | 5 | 6
+<div class="section">
+<div class="section-title">Стиль плашек заданий</div>
+<div class="form-row">
+<div class="form-group"><label>Фон плашки</label><input type="color" id="cfg-modalBg" value="#110920" oninput="pushUpdate()"></div>
+<div class="form-group"><label>Свечение плашки</label><input type="color" id="cfg-modalGlow" value="#a626ff" oninput="pushUpdate()"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Цвет кнопок ответа</label><input type="color" id="cfg-ansColor" value="#00f0ff" oninput="pushUpdate()"></div>
+<div class="form-group"><label>Фон поля ввода</label><input type="color" id="cfg-inputBg" value="#000000" oninput="pushUpdate()"></div>
+</div>
+</div>
+
+<div class="section">
+<div class="section-title">Тексты результатов</div>
+<div class="form-group" style="margin-bottom:10px"><label>Текст победы</label><input type="text" id="cfg-txtWin" value="ОТЛИЧНАЯ РАБОТА!" oninput="pushUpdate()"></div>
+<div class="form-group"><label>Текст поражения</label><input type="text" id="cfg-txtLose" value="ПОПРОБУЙ СНОВА!" oninput="pushUpdate()"></div>
+</div>
+
+<div class="section">
+<div class="section-title">Графика</div>
+<div class="form-group" style="margin-bottom:10px"><div class="file-btn" id="lbl-bg">Фон игры (на весь экран)<input type="file" accept="image/*" onchange="processImg(this,'bg')"></div></div>
+<div class="form-group" style="margin-bottom:10px"><div class="file-btn" id="lbl-char">Персонаж (подсказка)<input type="file" accept="image/*" onchange="processImg(this,'char')"></div></div>
+<div class="form-group"><label>Прозрачность персонажа: <span id="op-val">40%</span></label><input type="range" id="cfg-opacity" min="10" max="100" value="40" oninput="document.getElementById('op-val').innerText=this.value+'%';pushUpdate()"></div>
+</div>
+
+<div class="section">
+<div class="section-title">Вопросы ($ = формулы)</div>
+<textarea id="cfg-questions" oninput="pushUpdate()">Сколько будет 2+2? | 4 | 5 | 6
 Вычислите $\frac{10}{2}$: | 5
 Что такое $x$, если $x+2=4$? | 2 | 4 | -2
 Столица Франции? | Париж | Лондон | Рим</textarea>
-                <div class="hint">
-                    Формат для выбора: Вопрос | Прав.Ответ | Неверный 1 | Неверный 2<br>
-                    Формат ввода текста: Вопрос | Прав.Ответ
-                </div>
-            </div>
+<div class="hint">Выбор: Вопрос | Правильный | Неверный | Неверный<br>Текст: Вопрос | Правильный</div>
+</div>
 
-            <div class="section">
-                <div class="section-title">Элементы одежды (PNG без фона)</div>
-                <div class="file-btn">Добавить элемент одежды<input type="file" accept="image/png, image/webp" onchange="addClothingItem(this)"></div>
-                <div class="items-grid" id="items-container"></div>
-                <div class="hint">Ученик будет перетаскивать эти элементы на персонажа. При перетаскивании появится случайный вопрос из списка выше.</div>
-            </div>
-            
-            <div style="text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 20px;">
-                © Гальмиз Мария Александровна
-            </div>
-        </div>
+<div class="section">
+<div class="section-title">Элементы одежды</div>
+<div class="file-btn">Добавить элемент (PNG без фона)<input type="file" accept="image/png,image/webp" onchange="addClothingItem(this)"></div>
+<div class="items-grid" id="items-container"></div>
+<div class="hint">В предпросмотре справа перетащите зелёные маркеры на нужные места персонажа — это зафиксирует правильное расположение одежды.</div>
+</div>
 
-        <!-- ПРАВАЯ ПАНЕЛЬ -->
-        <div class="preview-area">
-            <div class="preview-header">
-                <span>LIVE ПРЕДПРОСМОТР (ТЕСТ-ДРАЙВ)</span>
-            </div>
-            <iframe id="game-preview"></iframe>
-        </div>
-    </div>
+<div style="text-align:center;font-size:11px;color:var(--text-muted);margin-top:20px">© Гальмиз Мария Александровна</div>
+</div>
 
-    <script>
-        let gameData = {
-            imgBg: '',
-            imgChar: '',
-            items: []
-        };
-        
-        let updateTimeout;
+<div class="preview-area">
+<div class="preview-header">LIVE ПРЕДПРОСМОТР (перетащите зелёные маркеры для фиксации мест)</div>
+<iframe id="game-preview"></iframe>
+</div>
+</div>
 
-        // Сжатие картинок
-        function processImg(input, key) {
-            const file = input.files[0];
-            if (!file) return;
-            const label = input.parentElement;
-            label.innerText = "Загрузка...";
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = key === 'bg' ? 1000 : 400; // Жмем сильнее для Genially
-                    let width = img.width, height = img.height;
-                    
-                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                    canvas.width = width; canvas.height = height;
-                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                    
-                    if(key === 'bg') gameData.imgBg = canvas.toDataURL('image/jpeg', 0.6);
-                    if(key === 'char') gameData.imgChar = canvas.toDataURL('image/webp', 0.8);
-                    
-                    label.innerHTML = `Загружено ✓ <input type="file" accept="image/*" onchange="processImg(this, '${key}')">`;
-                    label.style.borderColor = "#00f0ff"; label.style.color = "#00f0ff";
-                    updatePreview();
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
+<script>
+let gameData={imgBg:'',imgChar:'',imgTitleBg:'',items:[],targets:[]};
+let iframeReady=false;
 
-        // Добавление одежды
-        function addClothingItem(input) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    let w = img.width, h = img.height;
-                    if(w > 250) { h *= 250/w; w = 250; }
-                    canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                    
-                    gameData.items.push(canvas.toDataURL('image/webp', 0.8));
-                    renderItemsList();
-                    updatePreview();
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-            input.value = '';
-        }
+const LANG={
+ru:{q:'ВОПРОС',answer:'ОТВЕТИТЬ',wrong:'НЕВЕРНО! ПОПРОБУЙ ЕЩЁ.',restart:'НАЧАТЬ ЗАНОВО',ph:'Ваш ответ...',timeout:'ВРЕМЯ ВЫШЛО!'},
+en:{q:'QUESTION',answer:'ANSWER',wrong:'WRONG! TRY AGAIN.',restart:'RESTART',ph:'Your answer...',timeout:'TIME OUT!'},
+ko:{q:'질문',answer:'대답하기',wrong:'틀렸습니다! 다시 시도하세요.',restart:'다시 시작',ph:'답을 입력하세요...',timeout:'시간 초과!'}
+};
 
-        function renderItemsList() {
-            const cont = document.getElementById('items-container');
-            cont.innerHTML = '';
-            gameData.items.forEach((base64, idx) => {
-                cont.innerHTML += `<div class="item-thumb"><img src="${base64}"><button class="del-btn" onclick="gameData.items.splice(${idx},1); renderItemsList(); updatePreview()">X</button></div>`;
-            });
-        }
+function processImg(input,key){
+const file=input.files[0];if(!file)return;
+const label=input.parentElement;label.style.color='#00f0ff';
+const reader=new FileReader();
+reader.onload=e=>{const img=new Image();img.onload=()=>{
+const canvas=document.createElement('canvas');
+const MAX=(key==='bg'||key==='titleBg')?1000:400;
+let w=img.width,h=img.height;
+if(w>MAX){h*=MAX/w;w=MAX}
+canvas.width=w;canvas.height=h;
+canvas.getContext('2d').drawImage(img,0,0,w,h);
+if(key==='bg')gameData.imgBg=canvas.toDataURL('image/jpeg',.6);
+if(key==='titleBg')gameData.imgTitleBg=canvas.toDataURL('image/jpeg',.6);
+if(key==='char')gameData.imgChar=canvas.toDataURL('image/webp',.8);
+label.innerHTML=`Загружено ✓<input type="file" accept="image/*" onchange="processImg(this,'${key}')">`;
+pushUpdate();
+};img.src=e.target.result};
+reader.readAsDataURL(file);
+}
 
-        // Задержка обновления чтоб не лагало при вводе текста
-        function debounceUpdate() {
-            clearTimeout(updateTimeout);
-            updateTimeout = setTimeout(updatePreview, 500);
-        }
+function addClothingItem(input){
+const file=input.files[0];if(!file)return;
+const reader=new FileReader();
+reader.onload=e=>{const img=new Image();img.onload=()=>{
+const canvas=document.createElement('canvas');let w=img.width,h=img.height;
+if(w>250){h*=250/w;w=250}canvas.width=w;canvas.height=h;
+canvas.getContext('2d').drawImage(img,0,0,w,h);
+gameData.items.push(canvas.toDataURL('image/webp',.8));
+gameData.targets.push({x:45+gameData.items.length*3,y:40});
+renderItemsList();pushUpdate();
+};img.src=e.target.result};
+reader.readAsDataURL(file);input.value='';
+}
 
-        // ГЕНЕРАТОР КОДА ИГРЫ
-        function getGameHTML() {
-            const title = document.getElementById('cfg-title').value;
-            const desc = document.getElementById('cfg-desc').value;
-            const btnPlay = document.getElementById('cfg-btnPlay').value;
-            const txtWin = document.getElementById('cfg-txtWin').value;
-            const lives = document.getElementById('cfg-lives').value;
-            const time = document.getElementById('cfg-time').value;
-            const opacity = document.getElementById('cfg-opacity').value / 100;
-            
-            // Парсинг вопросов
-            const rawQ = document.getElementById('cfg-questions').value.split('\n');
-            let parsedQuestions = [];
-            rawQ.forEach(line => {
-                if(line.trim() !== '') {
-                    const parts = line.split('|').map(s => s.trim());
-                    if(parts.length >= 2) parsedQuestions.push(parts);
-                }
-            });
+function renderItemsList(){
+const c=document.getElementById('items-container');c.innerHTML='';
+gameData.items.forEach((b,i)=>{c.innerHTML+=`<div class="item-thumb"><img src="${b}"><button class="del-btn" onclick="delItem(${i})">X</button></div>`});
+}
+function delItem(i){gameData.items.splice(i,1);gameData.targets.splice(i,1);renderItemsList();pushUpdate();}
 
-            // Формируем HTML одежды
-            let htmlItems = '';
-            gameData.items.forEach((item, i) => {
-                // Располагаем вещи внизу экрана по горизонтали
-                htmlItems += `<img src="${item}" class="item" id="item-${i}" style="left:${10 + (i * 15)}%; top:80%;">`;
-            });
+function collectConfig(){
+const rawQ=document.getElementById('cfg-questions').value.split('\n');
+let questions=[];
+rawQ.forEach(l=>{if(l.trim()){const p=l.split('|').map(s=>s.trim());if(p.length>=2)questions.push(p)}});
+return{
+lang:document.getElementById('cfg-lang').value,
+useTitle:document.getElementById('cfg-useTitle').checked,
+title:document.getElementById('cfg-title').value,
+desc:document.getElementById('cfg-desc').value,
+titleColor:document.getElementById('cfg-titleColor').value,
+titleSize:document.getElementById('cfg-titleSize').value,
+titleFont:document.getElementById('cfg-titleFont').value,
+titleAnim:document.getElementById('cfg-titleAnim').value,
+playBtnColor:document.getElementById('cfg-playBtnColor').value,
+playBtnGlow:document.getElementById('cfg-playBtnGlow').value,
+btnPlay:document.getElementById('cfg-btnPlay').value,
+titleBgOp:document.getElementById('cfg-titleBgOp').value/100,
+lives:parseInt(document.getElementById('cfg-lives').value),
+time:parseInt(document.getElementById('cfg-time').value),
+timerColor:document.getElementById('cfg-timerColor').value,
+livesColor:document.getElementById('cfg-livesColor').value,
+lifeIcon:document.getElementById('cfg-lifeIcon').value,
+modalBg:document.getElementById('cfg-modalBg').value,
+modalGlow:document.getElementById('cfg-modalGlow').value,
+ansColor:document.getElementById('cfg-ansColor').value,
+inputBg:document.getElementById('cfg-inputBg').value,
+txtWin:document.getElementById('cfg-txtWin').value,
+txtLose:document.getElementById('cfg-txtLose').value,
+opacity:document.getElementById('cfg-opacity').value/100,
+questions,
+imgBg:gameData.imgBg,imgChar:gameData.imgChar,imgTitleBg:gameData.imgTitleBg,
+items:gameData.items,targets:gameData.targets
+};
+}
 
-            return `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"><\/script>
-                <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap');
-                    body { margin:0; padding:0; background:#000 url('${gameData.imgBg}') no-repeat center center; background-size:cover; font-family:'Rajdhani', sans-serif; overflow:hidden; user-select:none; color:white; height:100vh; width:100vw; }
-                    
-                    /* UI */
-                    .top-ui { position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 30px; box-sizing:border-box; z-index:50; pointer-events:none; }
-                    .ui-box { background:rgba(0,0,0,0.7); border:2px solid #00f0ff; border-radius:10px; padding:10px 20px; font-family:'Orbitron', sans-serif; font-size:20px; color:#00f0ff; text-shadow:0 0 10px #00f0ff; }
-                    
-                    /* Game Area */
-                    .char { position:absolute; left:50%; top:45%; transform:translate(-50%, -45%); height:75%; max-height:800px; object-fit:contain; opacity:${opacity}; pointer-events:none; z-index:1; }
-                    .item { position:absolute; height:15%; object-fit:contain; cursor:grab; z-index:10; filter:drop-shadow(0 0 10px #a626ff); transition: transform 0.1s; touch-action: none; }
-                    .item:active { cursor:grabbing; transform:scale(1.1); z-index:100 !important; }
-                    
-                    /* Screens */
-                    .screen { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(10,5,24,0.95); z-index:200; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px; box-sizing:border-box; backdrop-filter:blur(5px); }
-                    .screen h1 { font-family:'Orbitron'; font-size:40px; color:#00f0ff; text-shadow:0 0 20px #00f0ff; margin-bottom:10px; }
-                    .screen p { font-size:22px; max-width:600px; margin-bottom:30px; }
-                    .btn { background: linear-gradient(90deg, #a626ff, #d845ff); border:none; padding:15px 40px; border-radius:30px; font-family:'Orbitron'; font-weight:700; font-size:20px; color:white; cursor:pointer; box-shadow:0 0 20px rgba(166,38,255,0.6); text-transform:uppercase; transition:0.2s;}
-                    .btn:hover { transform:scale(1.05); box-shadow:0 0 30px #00f0ff; }
-                    
-                    /* Modal Question */
-                    .modal-overlay { display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:150; justify-content:center; align-items:center; }
-                    .modal { background:#110920; border:2px solid #a626ff; box-shadow:0 0 40px rgba(166,38,255,0.5); padding:30px; border-radius:15px; width:90%; max-width:500px; text-align:center; }
-                    .modal h2 { color:#00f0ff; margin-top:0; font-family:'Orbitron'; font-size:24px; }
-                    .q-text { font-size:22px; margin-bottom:20px; }
-                    
-                    .ans-grid { display:flex; flex-direction:column; gap:10px; }
-                    .ans-btn { background:rgba(255,255,255,0.1); border:1px solid #00f0ff; padding:12px; color:white; font-size:18px; cursor:pointer; border-radius:8px; font-family:'Rajdhani'; transition:0.2s; }
-                    .ans-btn:hover { background:rgba(0,240,255,0.2); }
-                    .text-input { width:100%; padding:12px; font-size:18px; border-radius:8px; border:1px solid #00f0ff; background:#000; color:white; box-sizing:border-box; margin-bottom:10px;text-align:center;}
-                    
-                    #wrongMsg { color:#ff3366; font-weight:bold; margin-top:15px; display:none; text-shadow: 0 0 10px red; }
-                </style>
-            </head>
-            <body>
-                <!-- Screens -->
-                <div class="screen" id="startScreen">
-                    <h1>${title}</h1>
-                    <p>${desc}</p>
-                    <button class="btn" onclick="startGame()">${btnPlay}</button>
-                </div>
-                
-                <div class="screen" id="endScreen" style="display:none;">
-                    <h1 id="endTitle"></h1>
-                    <button class="btn" onclick="location.reload()">НАЧАТЬ ЗАНОВО</button>
-                </div>
+// Обновление БЕЗ мерцания — через postMessage
+function pushUpdate(){
+document.getElementById('titlePanel').style.display=document.getElementById('cfg-useTitle').checked?'block':'none';
+if(iframeReady){
+document.getElementById('game-preview').contentWindow.postMessage({type:'config',cfg:collectConfig(),editor:true},'*');
+}
+}
 
-                <!-- Game UI -->
-                <div class="top-ui" id="gameUI" style="display:none;">
-                    ${time > 0 ? `<div class="ui-box">⏱ <span id="timerTxt">${time}</span></div>` : '<div></div>'}
-                    ${lives > 0 ? `<div class="ui-box">❤ <span id="livesTxt">${lives}</span></div>` : '<div></div>'}
-                </div>
+// Получаем позиции маркеров из iframe
+window.addEventListener('message',e=>{
+if(e.data.type==='ready'){iframeReady=true;pushUpdate();}
+if(e.data.type==='targetMoved'){gameData.targets[e.data.index]={x:e.data.x,y:e.data.y};}
+});
 
-                <!-- Play Area -->
-                <div id="playArea" style="display:none; width:100%; height:100%; position:absolute; top:0;left:0;">
-                    ${gameData.imgChar ? `<img src="${gameData.imgChar}" class="char" id="baseChar">` : ''}
-                    ${htmlItems}
-                </div>
+function buildGameDoc(editorMode){
+return `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<script>
+window.MathJax={tex:{inlineMath:[['$','$']]},svg:{fontCache:'global'}};
+<\/script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"><\/script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap');
+body{margin:0;font-family:'Rajdhani',sans-serif;overflow:hidden;user-select:none;color:#fff;height:100vh;width:100vw;background:#000}
+#bgLayer{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0}
+.top-ui{position:absolute;top:20px;width:100%;display:flex;justify-content:space-between;padding:0 30px;box-sizing:border-box;z-index:50;pointer-events:none}
+.ui-box{background:rgba(0,0,0,.7);border-radius:10px;padding:8px 18px;font-family:'Orbitron';font-size:20px}
+.char{position:absolute;left:50%;top:42%;transform:translate(-50%,-42%);height:70%;object-fit:contain;pointer-events:none;z-index:1}
+.tray{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);width:80%;height:14%;background:rgba(0,0,0,.5);border:2px dashed rgba(255,255,255,.3);border-radius:15px;display:flex;align-items:center;justify-content:center;gap:15px;z-index:5}
+.item{height:80%;object-fit:contain;cursor:grab;filter:drop-shadow(0 0 8px #a626ff);touch-action:none;transition:transform .1s}
+.item.placed{position:absolute;z-index:8}
+.item.dragging{position:fixed;z-index:100;cursor:grabbing}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.marker{position:absolute;width:40px;height:40px;background:rgba(0,255,0,.3);border:2px dashed #00ff00;border-radius:50%;transform:translate(-50%,-50%);cursor:move;z-index:60;display:flex;align-items:center;justify-content:center;font-size:12px;color:#00ff00;font-family:'Orbitron'}
+.screen{position:absolute;inset:0;z-index:200;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;box-sizing:border-box}
+.screen p{font-size:22px;max-width:600px;margin:0 0 30px;color:#fff}
+.play-btn{border:none;padding:15px 40px;border-radius:30px;font-family:'Orbitron';font-weight:700;font-size:20px;color:#fff;cursor:pointer;text-transform:uppercase;transition:.2s}
+.play-btn:hover{transform:scale(1.05)}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+@keyframes glowAnim{0%,100%{filter:brightness(1)}50%{filter:brightness(1.6)}}
+.anim-pulse{animation:pulse 1.5s infinite}
+.anim-float{animation:float 3s ease-in-out infinite}
+.anim-glowAnim{animation:glowAnim 1.5s infinite}
+.modal-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.8);z-index:150;justify-content:center;align-items:center}
+.modal{padding:30px;border-radius:15px;width:90%;max-width:500px;text-align:center}
+.modal h2{margin:0 0 15px;font-family:'Orbitron';font-size:24px}
+.q-text{font-size:22px;margin-bottom:20px}
+.ans-grid{display:flex;flex-direction:column;gap:10px}
+.ans-btn{background:rgba(255,255,255,.1);padding:12px;color:#fff;font-size:18px;cursor:pointer;border-radius:8px;font-family:'Rajdhani';transition:.2s}
+.ans-btn:hover{background:rgba(255,255,255,.25)}
+.text-input{width:100%;padding:12px;font-size:18px;border-radius:8px;color:#fff;box-sizing:border-box;margin-bottom:10px;text-align:center}
+#wrongMsg{font-weight:bold;margin-top:15px;display:none;text-shadow:0 0 10px red}
+</style></head>
+<body>
+<div id="bgLayer"></div>
+<div id="startScreen" class="screen"></div>
+<div id="endScreen" class="screen" style="display:none"><h1 id="endTitle"></h1><button class="play-btn" id="restartBtn" onclick="location.reload()"></button></div>
+<div class="top-ui" id="gameUI" style="display:none">
+<div class="ui-box" id="timerBox">⏱ <span id="timerTxt"></span></div>
+<div class="ui-box" id="livesBox"><span id="livesTxt"></span></div>
+</div>
+<div id="playArea" style="display:none;position:absolute;inset:0">
+<img id="baseChar" class="char" style="display:none">
+<div id="markerLayer"></div>
+<div class="tray" id="tray"></div>
+</div>
+<div class="modal-overlay" id="qModal"><div class="modal" id="modalBox">
+<h2 id="qTitle"></h2>
+<div class="q-text" id="qText"></div>
+<div class="ans-grid" id="ansContainer"></div>
+<div id="wrongMsg"></div>
+</div></div>
 
-                <!-- Question Modal -->
-                <div class="modal-overlay" id="qModal">
-                    <div class="modal">
-                        <h2>ВОПРОС</h2>
-                        <div class="q-text" id="qText"></div>
-                        <div class="ans-grid" id="ansContainer"></div>
-                        <div id="wrongMsg">НЕВЕРНО! ПОПРОБУЙ ЕЩЕ РАЗ.</div>
-                    </div>
-                </div>
+<script>
+let CFG=null, EDITOR=false;
+let L={};
+let placed=0, curTime=0, curLives=0, timerInt=null;
+let curDrag=null, curTargetQ=null, curItemIdx=-1, startX=0, startY=0;
+let audioCtx=null;
 
-                <script>
-                    // Audio Synth (без внешних файлов)
-                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    function playSound(type) {
-                        if(audioCtx.state === 'suspended') audioCtx.resume();
-                        const osc = audioCtx.createOscillator();
-                        const gain = audioCtx.createGain();
-                        osc.connect(gain); gain.connect(audioCtx.destination);
-                        
-                        if(type === 'win') {
-                            osc.type = 'sine';
-                            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-                            osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
-                            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-                            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-                        } else {
-                            osc.type = 'sawtooth';
-                            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-                            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-                        }
-                    }
+function playSound(type){
+try{
+if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+if(audioCtx.state==='suspended')audioCtx.resume();
+const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+o.connect(g);g.connect(audioCtx.destination);
+if(type==='win'){o.type='sine';o.frequency.setValueAtTime(523,audioCtx.currentTime);o.frequency.setValueAtTime(659,audioCtx.currentTime+.1);g.gain.setValueAtTime(.4,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.5);o.start();o.stop(audioCtx.currentTime+.5);}
+else{o.type='sawtooth';o.frequency.setValueAtTime(150,audioCtx.currentTime);g.gain.setValueAtTime(.4,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.3);o.start();o.stop(audioCtx.currentTime+.3);}
+}catch(e){}
+}
 
-                    // Game Logic Variables
-                    let questions = ${JSON.stringify(parsedQuestions)};
-                    let totalItems = ${gameData.items.length};
-                    let placedItems = 0;
-                    let curTime = ${time};
-                    let curLives = ${lives};
-                    let timerInt;
-                    let currentDragItem = null;
-                    let currentTargetQuestion = null;
-                    let startX, startY;
+const LANGS={
+ru:{q:'ВОПРОС',answer:'ОТВЕТИТЬ',wrong:'НЕВЕРНО! ПОПРОБУЙ ЕЩЁ.',restart:'НАЧАТЬ ЗАНОВО',ph:'Ваш ответ...',timeout:'ВРЕМЯ ВЫШЛО!'},
+en:{q:'QUESTION',answer:'ANSWER',wrong:'WRONG! TRY AGAIN.',restart:'RESTART',ph:'Your answer...',timeout:'TIME OUT!'},
+ko:{q:'질문',answer:'대답하기',wrong:'틀렸습니다! 다시 시도하세요.',restart:'다시 시작',ph:'답을 입력하세요...',timeout:'시간 초과!'}
+};
 
-                    function startGame() {
-                        if(audioCtx.state === 'suspended') audioCtx.resume();
-                        document.getElementById('startScreen').style.display = 'none';
-                        document.getElementById('gameUI').style.display = 'flex';
-                        document.getElementById('playArea').style.display = 'block';
-                        
-                        if(curTime > 0) {
-                            timerInt = setInterval(() => {
-                                curTime--;
-                                document.getElementById('timerTxt').innerText = curTime;
-                                if(curTime <= 0) gameOver(false);
-                            }, 1000);
-                        }
-                    }
+// Приём конфигурации от редактора (без перезагрузки = без мерцания)
+window.addEventListener('message',e=>{
+if(e.data && e.data.type==='config'){
+CFG=e.data.cfg; EDITOR=!!e.data.editor;
+applyConfig();
+}
+});
 
-                    function gameOver(isWin) {
-                        clearInterval(timerInt);
-                        document.getElementById('playArea').style.display = 'none';
-                        document.getElementById('gameUI').style.display = 'none';
-                        document.getElementById('endScreen').style.display = 'flex';
-                        document.getElementById('endTitle').innerText = isWin ? '${txtWin}' : 'ВРЕМЯ ИСТЕКЛО / ЖИЗНИ КОНЧИЛИСЬ';
-                        document.getElementById('endTitle').style.color = isWin ? '#00ff00' : '#ff3366';
-                        document.getElementById('endTitle').style.textShadow = isWin ? '0 0 20px #00ff00' : '0 0 20px #ff3366';
-                    }
+function applyConfig(){
+L=LANGS[CFG.lang]||LANGS.ru;
 
-                    // Управление Drag & Drop (мышь и тач)
-                    const items = document.querySelectorAll('.item');
-                    items.forEach(el => {
-                        el.addEventListener('pointerdown', (e) => {
-                            currentDragItem = el;
-                            startX = el.offsetLeft;
-                            startY = el.offsetTop;
-                            el.setPointerCapture(e.pointerId);
-                        });
-                        
-                        el.addEventListener('pointermove', (e) => {
-                            if(currentDragItem !== el) return;
-                            let newX = e.clientX - el.offsetWidth/2;
-                            let newY = e.clientY - el.offsetHeight/2;
-                            el.style.left = newX + 'px';
-                            el.style.top = newY + 'px';
-                        });
+// Фон
+const bg=document.getElementById('bgLayer');
+bg.style.backgroundImage=CFG.imgBg?'url('+CFG.imgBg+')':'none';
+bg.style.background=CFG.imgBg?bg.style.background:'#06020c';
+if(CFG.imgBg)bg.style.backgroundImage='url('+CFG.imgBg+')';
 
-                        el.addEventListener('pointerup', (e) => {
-                            if(currentDragItem !== el) return;
-                            el.releasePointerCapture(e.pointerId);
-                            
-                            // Проверка коллизии с центром экрана (там стоит персонаж)
-                            const char = document.getElementById('baseChar');
-                            if(!char) { currentDragItem = null; return; }
-                            
-                            const cRect = char.getBoundingClientRect();
-                            const iRect = el.getBoundingClientRect();
-                            
-                            // Если предмет брошен поверх персонажа
-                            if(iRect.right > cRect.left && iRect.left < cRect.right && 
-                               iRect.bottom > cRect.top && iRect.top < cRect.bottom) {
-                                
-                                triggerQuestion(el);
-                            } else {
-                                // Возврат на старт
-                                el.style.left = startX + 'px';
-                                el.style.top = startY + 'px';
-                                currentDragItem = null;
-                            }
-                        });
-                    });
+// Персонаж
+const char=document.getElementById('baseChar');
+if(CFG.imgChar){char.src=CFG.imgChar;char.style.display='block';char.style.opacity=CFG.opacity;}
+else char.style.display='none';
 
-                    function triggerQuestion(itemEl) {
-                        if(questions.length === 0) {
-                            // Если вопросы кончились - просто ставим
-                            successItem(itemEl);
-                            return;
-                        }
-                        
-                        // Берем случайный вопрос
-                        const qIdx = Math.floor(Math.random() * questions.length);
-                        currentTargetQuestion = questions[qIdx];
-                        
-                        document.getElementById('qText').innerHTML = currentTargetQuestion[0];
-                        const container = document.getElementById('ansContainer');
-                        container.innerHTML = '';
-                        document.getElementById('wrongMsg').style.display = 'none';
-                        
-                        // Если это текстовый ввод
-                        if(currentTargetQuestion.length === 2) {
-                            container.innerHTML = \`<input type="text" id="tInput" class="text-input" placeholder="Ваш ответ...">
-                                                   <button class="btn" style="width:100%" onclick="checkTextAns()">ОТВЕТИТЬ</button>\`;
-                        } else {
-                            // Мультивыбор
-                            let answers = currentTargetQuestion.slice(1);
-                            // Перемешиваем
-                            for (let i = answers.length - 1; i > 0; i--) {
-                                const j = Math.floor(Math.random() * (i + 1));
-                                [answers[i], answers[j]] = [answers[j], answers[i]];
-                            }
-                            answers.forEach(a => {
-                                container.innerHTML += \`<button class="ans-btn" onclick="checkBtnAns('\`+a+\`')">\`+a+\`</button>\`;
-                            });
-                        }
-                        
-                        document.getElementById('qModal').style.display = 'flex';
-                        if(window.MathJax) MathJax.typeset();
-                    }
+// UI жизни/таймер
+const tb=document.getElementById('timerBox');
+tb.style.display=CFG.time>0?'block':'none';
+tb.style.border='2px solid '+CFG.timerColor;
+tb.style.color=CFG.timerColor;
+tb.style.textShadow='0 0 10px '+CFG.timerColor;
+const lb=document.getElementById('livesBox');
+lb.style.display=CFG.lives>0?'block':'none';
+lb.style.border='2px solid '+CFG.livesColor;
+lb.style.color=CFG.livesColor;
+lb.style.textShadow='0 0 10px '+CFG.livesColor;
 
-                    function checkTextAns() {
-                        const val = document.getElementById('tInput').value.trim().toLowerCase();
-                        const correct = currentTargetQuestion[1].trim().toLowerCase();
-                        if(val === correct) handleWin();
-                        else handleLose();
-                    }
-                    
-                    function checkBtnAns(val) {
-                        if(val === currentTargetQuestion[1]) handleWin();
-                        else handleLose();
-                    }
+// Стиль плашки
+const mb=document.getElementById('modalBox');
+mb.style.background=CFG.modalBg;
+mb.style.border='2px solid '+CFG.modalGlow;
+mb.style.boxShadow='0 0 40px '+CFG.modalGlow;
+document.getElementById('qTitle').style.color=CFG.modalGlow;
+document.getElementById('qTitle').innerText=L.q;
 
-                    function handleWin() {
-                        playSound('win');
-                        document.getElementById('qModal').style.display = 'none';
-                        successItem(currentDragItem);
-                    }
+// Титульный экран
+buildStartScreen();
 
-                    function handleLose() {
-                        playSound('lose');
-                        document.getElementById('wrongMsg').style.display = 'block';
-                        
-                        if(curLives > 0) {
-                            curLives--;
-                            document.getElementById('livesTxt').innerText = curLives;
-                            if(curLives <= 0) {
-                                document.getElementById('qModal').style.display = 'none';
-                                gameOver(false);
-                                return;
-                            }
-                        }
-                        
-                        setTimeout(() => {
-                            document.getElementById('qModal').style.display = 'none';
-                            currentDragItem.style.left = startX + 'px';
-                            currentDragItem.style.top = startY + 'px';
-                            currentDragItem = null;
-                        }, 1000);
-                    }
+// В режиме редактора показываем персонажа+маркеры для настройки позиций
+if(EDITOR){
+document.getElementById('startScreen').style.display='none';
+document.getElementById('endScreen').style.display='none';
+document.getElementById('playArea').style.display='block';
+document.getElementById('gameUI').style.display='none';
+buildMarkers();
+buildTray(true);
+}else{
+buildTray(false);
+}
+}
 
-                    function successItem(el) {
-                        el.style.pointerEvents = 'none';
-                        el.style.filter = 'drop-shadow(0 0 20px #00ff00)';
-                        el.style.zIndex = '5';
-                        currentDragItem = null;
-                        placedItems++;
-                        
-                        if(placedItems >= totalItems && totalItems > 0) {
-                            setTimeout(() => gameOver(true), 1000);
-                        }
-                    }
-                <\/script>
-            </body>
-            </html>`;
-        }
+function buildStartScreen(){
+const s=document.getElementById('startScreen');
+if(!CFG.useTitle){s.style.display='none';if(!EDITOR)startGame();return;}
+if(EDITOR)return;
+s.style.display='flex';
+let bgStyle='';
+if(CFG.imgTitleBg){
+bgStyle='background:linear-gradient(rgba(6,2,12,'+(1-CFG.titleBgOp)+'),rgba(6,2,12,'+(1-CFG.titleBgOp)+')),url('+CFG.imgTitleBg+');background-size:cover;background-position:center;';
+}else{bgStyle='background:rgba(10,5,24,'+(CFG.titleBgOp)+');backdrop-filter:blur(4px);';}
+s.setAttribute('style','position:absolute;inset:0;z-index:200;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;box-sizing:border-box;'+bgStyle);
+const animClass=CFG.titleAnim!=='none'?'anim-'+CFG.titleAnim:'';
+s.innerHTML='<h1 class="'+animClass+'" style="color:'+CFG.titleColor+';font-size:'+CFG.titleSize+'px;font-family:\\''+CFG.titleFont+'\\';text-shadow:0 0 20px '+CFG.titleColor+';margin-bottom:15px">'+esc(CFG.title)+'</h1>'+
+'<p>'+esc(CFG.desc)+'</p>'+
+'<button class="play-btn" style="background:'+CFG.playBtnColor+';box-shadow:0 0 25px '+CFG.playBtnGlow+'" onclick="startGame()">'+esc(CFG.btnPlay)+'</button>';
+}
 
-        function updatePreview() {
-            const iframe = document.getElementById('game-preview');
-            // Используем srcdoc для рендеринга внутри редактора
-            iframe.srcdoc = getGameHTML();
-        }
+function esc(t){const d=document.createElement('div');d.innerText=t||'';return d.innerHTML;}
 
-        function exportForGenially() {
-            const rawHTML = getGameHTML();
-            
-            // Заменяем кавычки для безопасной вставки в атрибут srcdoc
-            // Это самый надежный способ внедрить сложный код в Genially "Other/Другое"
-            const escapedHTML = rawHTML
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#39;");
+// Маркеры (редактор фиксирует правильные позиции одежды)
+function buildMarkers(){
+const layer=document.getElementById('markerLayer');
+layer.innerHTML='';
+CFG.targets.forEach((t,i)=>{
+const m=document.createElement('div');
+m.className='marker';
+m.style.left=t.x+'%';m.style.top=t.y+'%';
+m.innerText=(i+1);
+makeMarkerDraggable(m,i);
+layer.appendChild(m);
+});
+}
 
-            const finalIframe = `<iframe srcdoc="${escapedHTML}" width="100%" height="600px" frameborder="0" allowfullscreen></iframe>`;
-            
-            navigator.clipboard.writeText(finalIframe).then(() => {
-                const btn = document.getElementById('copyBtn');
-                btn.innerText = "СКОПИРОВАНО! ВСТАВЬТЕ В GENIALLY";
-                btn.style.background = "#00ff00";
-                setTimeout(() => {
-                    btn.innerText = "Скопировать код для Genially";
-                    btn.style.background = "var(--primary)";
-                }, 4000);
-            });
-        }
+function makeMarkerDraggable(m,i){
+m.addEventListener('pointerdown',e=>{
+e.preventDefault();m.setPointerCapture(e.pointerId);
+const move=ev=>{
+const r=document.getElementById('playArea').getBoundingClientRect();
+let x=((ev.clientX-r.left)/r.width)*100;
+let y=((ev.clientY-r.top)/r.height)*100;
+x=Math.max(0,Math.min(100,x));y=Math.max(0,Math.min(100,y));
+m.style.left=x+'%';m.style.top=y+'%';
+CFG.targets[i]={x,y};
+parent.postMessage({type:'targetMoved',index:i,x,y},'*');
+};
+const up=()=>{m.removeEventListener('pointermove',move);m.removeEventListener('pointerup',up);};
+m.addEventListener('pointermove',move);
+m.addEventListener('pointerup',up);
+});
+}
 
-        // Инициализация при старте
-        window.onload = updatePreview;
-    </script>
+// Поднос с одеждой
+function buildTray(showAll){
+const tray=document.getElementById('tray');
+tray.innerHTML='';
+CFG.items.forEach((src,i)=>{
+const img=document.createElement('img');
+img.src=src;img.className='item';img.dataset.idx=i;
+if(!EDITOR)makeItemDraggable(img,i);
+tray.appendChild(img);
+});
+}
+
+function makeItemDraggable(img,idx){
+img.addEventListener('pointerdown',e=>{
+e.preventDefault();
+curDrag=img;curItemIdx=idx;
+const r=img.getBoundingClientRect();
+startX=r.left;startY=r.top;
+img.classList.add('dragging');
+img.style.left=r.left+'px';img.style.top=r.top+'px';
+img.style.width=r.width+'px';img.style.height=r.height+'px';
+document.body.appendChild(img);
+img.setPointerCapture(e.pointerId);
+const move=ev=>{
+img.style.left=(ev.clientX-r.width/2)+'px';
+img.style.top=(ev.clientY-r.height/2)+'px';
+};
+const up=ev=>{
+img.removeEventListener('pointermove',move);
+img.removeEventListener('pointerup',up);
+checkDrop(img,idx,ev);
+};
+img.addEventListener('pointermove',move);
+img.addEventListener('pointerup',up);
+});
+}
+
+function checkDrop(img,idx,ev){
+const area=document.getElementById('playArea').getBoundingClientRect();
+const t=CFG.targets[idx];
+const tx=area.left+area.width*(t.x/100);
+const ty=area.top+area.height*(t.y/100);
+const dist=Math.hypot(ev.clientX-tx,ev.clientY-ty);
+const tol=area.width*0.12;
+if(dist<tol){
+// Правильно размещено -> вопрос
+triggerQuestion(img,idx,tx,ty,area);
+}else{
+// Неверно -> качается и возвращается
+img.classList.remove('dragging');
+img.classList.add('shake');
+setTimeout(()=>{img.classList.remove('shake');returnToTray(img);},400);
+}
+}
+
+function returnToTray(img){
+img.classList.remove('dragging','placed');
+img.style.position='';img.style.left='';img.style.top='';img.style.width='';img.style.height='';
+document.getElementById('tray').appendChild(img);
+if(!EDITOR)makeItemDraggable(img,parseInt(img.dataset.idx));
+}
+
+function triggerQuestion(img,idx,tx,ty,area){
+img.style.visibility='hidden';
+if(CFG.questions.length===0){placeItem(img,idx,tx,ty,area);return;}
+curTargetQ=CFG.questions[Math.floor(Math.random()*CFG.questions.length)];
+document.getElementById('qText').innerHTML=curTargetQ[0];
+const c=document.getElementById('ansContainer');c.innerHTML='';
+document.getElementById('wrongMsg').style.display='none';
+document.getElementById('wrongMsg').innerText=L.wrong;
+if(curTargetQ.length===2){
+c.innerHTML='<input type="text" id="tInput" class="text-input" style="background:'+CFG.inputBg+';border:1px solid '+CFG.ansColor+'" placeholder="'+L.ph+'">'+
+'<button class="play-btn" style="width:100%;background:'+CFG.ansColor+';color:#000" onclick="submitText()">'+L.answer+'</button>';
+}else{
+let ans=curTargetQ.slice(1);
+for(let i=ans.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ans[i],ans[j]]=[ans[j],ans[i]];}
+ans.forEach(a=>{
+const b=document.createElement('button');
+b.className='ans-btn';b.style.border='1px solid '+CFG.ansColor;b.innerText=a;
+b.onclick=()=>checkAns(a,img,idx,tx,ty,area);
+c.appendChild(b);
+});
+}
+document.getElementById('qModal')._ctx={img,idx,tx,ty,area};
+document.getElementById('qModal').style.display='flex';
+if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise([document.getElementById('qText')]);
+}
+
+function submitText(){
+const ctx=document.getElementById('qModal')._ctx;
+const v=(document.getElementById('tInput').value||'').trim().toLowerCase();
+const cor=curTargetQ[1].trim().toLowerCase();
+if(v===cor)correct(ctx);else wrong(ctx);
+}
+function checkAns(a,img,idx,tx,ty,area){
+if(a===curTargetQ[1])correct({img,idx,tx,ty,area});else wrong({img,idx,tx,ty,area});
+}
+
+function correct(ctx){
+playSound('win');
+document.getElementById('qModal').style.display='none';
+ctx.img.style.visibility='visible';
+placeItem(ctx.img,ctx.idx,ctx.tx,ctx.ty,ctx.area);
+}
+function wrong(ctx){
+playSound('lose');
+document.getElementById('wrongMsg').style.display='block';
+if(CFG.lives>0){curLives--;document.getElementById('livesTxt').innerText=repeatIcon();
+if(curLives<=0){document.getElementById('qModal').style.display='none';gameOver(false);return;}}
+setTimeout(()=>{
+document.getElementById('qModal').style.display='none';
+ctx.img.style.visibility='visible';
+returnToTray(ctx.img);
+},1200);
+}
+
+function placeItem(img,idx,tx,ty,area){
+img.classList.remove('dragging');
+img.classList.add('placed');
+img.style.position='absolute';
+img.style.left=(CFG.targets[idx].x)+'%';
+img.style.top=(CFG.targets[idx].y)+'%';
+img.style.transform='translate(-50%,-50%)';
+img.style.width='';img.style.height='15%';
+img.style.filter='drop-shadow(0 0 15px #00ff00)';
+img.style.pointerEvents='none';
+document.getElementById('playArea').appendChild(img);
+placed++;
+if(placed>=CFG.items.length&&CFG.items.length>0){
+setTimeout(()=>gameOver(true),800);
+}
+}
+
+function repeatIcon(){let s='';for(let i=0;i<curLives;i++)s+=CFG.lifeIcon;return s;}
+
+function startGame(){
+if(!audioCtx){try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+document.getElementById('startScreen').style.display='none';
+document.getElementById('endScreen').style.display='none';
+document.getElementById('playArea').style.display='block';
+document.getElementById('gameUI').style.display='flex';
+document.getElementById('markerLayer').innerHTML=''; // скрываем маркеры в игре
+placed=0;curLives=CFG.lives;curTime=CFG.time;
+if(CFG.lives>0)document.getElementById('livesTxt').innerText=repeatIcon();
+if(CFG.time>0){
+document.getElementById('timerTxt').innerText=curTime;
+clearInterval(timerInt);
+timerInt=setInterval(()=>{curTime--;document.getElementById('timerTxt').innerText=curTime;if(curTime<=0)gameOver(false);},1000);
+}
+buildTray(false);
+}
+
+function gameOver(isWin){
+clearInterval(timerInt);
+document.getElementById('playArea').style.display='none';
+document.getElementById('gameUI').style.display='none';
+const es=document.getElementById('endScreen');
+es.style.display='flex';
+es.style.background=CFG.imgBg?'rgba(6,2,12,.92)':'#06020c';
+const t=document.getElementById('endTitle');
+t.innerText=isWin?CFG.txtWin:(curTime<=0?L.timeout:CFG.txtLose);
+t.style.color=isWin?'#00ff00':'#ff3366';
+t.style.textShadow='0 0 20px '+(isWin?'#00ff00':'#ff3366');
+t.style.fontFamily='Orbitron';t.style.fontSize='38px';t.style.marginBottom='30px';
+document.getElementById('restartBtn').innerText=L.restart;
+document.getElementById('restartBtn').style.background=CFG.playBtnColor;
+document.getElementById('restartBtn').style.boxShadow='0 0 25px '+CFG.playBtnGlow;
+}
+
+// Сообщаем редактору что готовы принимать конфиг
+parent.postMessage({type:'ready'},'*');
+<\/script>
+</body></html>`;
+}
+
+// Инициализация iframe одним документом (грузится ОДИН раз, дальше только postMessage)
+function initPreview(){
+const iframe=document.getElementById('game-preview');
+iframe.srcdoc=buildGameDoc(true);
+}
+
+function exportForGenially(){
+// Собираем автономную версию: конфиг вшивается прямо в документ
+const cfg=collectConfig();
+let doc=buildGameDoc(false);
+// Вставляем автозапуск конфига без postMessage
+const inject='<script>window.addEventListener("DOMContentLoaded",function(){window.postMessage({type:"config",cfg:'+JSON.stringify(cfg)+',editor:false},"*");});<\\/script>';
+doc=doc.replace('</body>',inject+'</body>');
+const esc=doc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const ifr='<iframe srcdoc="'+esc+'" width="100%" height="600px" frameborder="0" allowfullscreen allow="autoplay"></iframe>';
+navigator.clipboard.writeText(ifr).then(()=>{
+const b=document.getElementById('copyBtn');
+b.innerText='СКОПИРОВАНО! ВСТАВЬТЕ В GENIALLY';b.style.background='#00ff00';
+setTimeout(()=>{b.innerText='Скопировать код для Genially';b.style.background='var(--primary)';},4000);
+});
+}
+
+window.onload=initPreview;
+</script>
 </body>
 </html>
