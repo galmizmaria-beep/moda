@@ -155,6 +155,10 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 <div class="form-group"><label>Цвет кнопок ответа</label><input type="color" id="cfg-ansColor" value="#00f0ff" oninput="pushUpdate()"></div>
 <div class="form-group"><label>Фон поля ввода</label><input type="color" id="cfg-inputBg" value="#000000" oninput="pushUpdate()"></div>
 </div>
+<div class="form-row">
+<div class="form-group"><label>Цвет верного ответа</label><input type="color" id="cfg-correctColor" value="#00ff00" oninput="pushUpdate()"></div>
+<div class="form-group"><label>Цвет неверного ответа</label><input type="color" id="cfg-wrongColor" value="#ff3366" oninput="pushUpdate()"></div>
+</div>
 </div>
 
 <div class="section">
@@ -182,6 +186,7 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 
 <div class="section">
 <div class="section-title">Вопросы ($ = формулы)</div>
+<label class="toggle" style="margin-bottom:10px"><input type="checkbox" id="cfg-randomQ" checked onchange="pushUpdate()"> Случайный порядок вопросов</label>
 <textarea id="cfg-questions" oninput="pushUpdate()">Сколько будет 2+2? | 4 | 5 | 6
 Вычислите $\frac{10}{2}$: | 5
 Что такое $x$, если $x+2=4$? | 2 | 4 | -2
@@ -317,6 +322,9 @@ function collectConfig(){
         modalGlow:document.getElementById('cfg-modalGlow').value,
         ansColor:document.getElementById('cfg-ansColor').value,
         inputBg:document.getElementById('cfg-inputBg').value,
+        correctColor:document.getElementById('cfg-correctColor').value,
+        wrongColor:document.getElementById('cfg-wrongColor').value,
+        randomQuestions:document.getElementById('cfg-randomQ').checked,
         txtWin:document.getElementById('cfg-txtWin').value,
         txtLose:document.getElementById('cfg-txtLose').value,
         txtWinColor:document.getElementById('cfg-txtWinColor').value,
@@ -403,7 +411,7 @@ body{margin:0;overflow:hidden;user-select:none;color:#fff;height:100vh;width:100
 .anim-swing{animation:swing 2s infinite}
 .anim-zoom{animation:zoom 2s infinite}
 .modal-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.8);z-index:150;justify-content:center;align-items:center}
-.modal{padding:30px;border-radius:15px;width:90%;max-width:500px;text-align:center}
+.modal{padding:30px;border-radius:15px;width:90%;max-width:500px;text-align:center;transition:box-shadow 0.3s, border-color 0.3s;}
 .modal h2{margin:0 0 15px;font-size:24px}
 .q-text{font-size:22px;margin-bottom:20px}
 .ans-grid{display:flex;flex-direction:column;gap:10px}
@@ -438,6 +446,7 @@ let L={};
 let placed=0, curTime=0, curLives=0, timerInt=null;
 let curDrag=null, curTargetQ=null, curItemIdx=-1, startX=0, startY=0;
 let audioCtx=null;
+let availableQuestions=[];
 
 function playSound(type){
 try{
@@ -592,14 +601,14 @@ window.addEventListener('pointerup',up);
 function makeMarkerResizable(m, resizer, i) {
 resizer.addEventListener('pointerdown', e => {
 e.preventDefault();
-e.stopPropagation(); // Отключаем перетаскивание самого маркера
+e.stopPropagation(); 
 try{resizer.setPointerCapture(e.pointerId);}catch(err){}
 const area = document.getElementById('playArea').getBoundingClientRect();
 const move = ev => {
 const rect = m.getBoundingClientRect();
 const cx = rect.left + rect.width / 2;
 let nw = (ev.clientX - cx) * 2;
-if(nw < 20) nw = 20; // мин ширина
+if(nw < 20) nw = 20; 
 let wPct = (nw / area.width) * 100;
 m.style.width = wPct + '%';
 CFG.targets[i].w = wPct;
@@ -674,11 +683,24 @@ document.getElementById('tray').appendChild(img);
 function triggerQuestion(img,idx,tx,ty,area){
 img.style.visibility='hidden';
 if(CFG.questions.length===0){placeItem(img,idx,tx,ty,area);return;}
-curTargetQ=CFG.questions[Math.floor(Math.random()*CFG.questions.length)];
+
+if(availableQuestions.length === 0) {
+    availableQuestions = Array.from({length: CFG.questions.length}, (_, i) => i);
+}
+
+let qIdx;
+if(CFG.randomQuestions) {
+    qIdx = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+} else {
+    qIdx = availableQuestions[0];
+}
+
+curTargetQ = CFG.questions[qIdx];
 document.getElementById('qText').innerHTML=curTargetQ[0];
 const c=document.getElementById('ansContainer');c.innerHTML='';
 document.getElementById('wrongMsg').style.display='none';
 document.getElementById('wrongMsg').innerText=L.wrong;
+
 if(curTargetQ.length===2){
 c.innerHTML='<input type="text" id="tInput" class="text-input" style="background:'+CFG.inputBg+';border:1px solid '+CFG.ansColor+'" placeholder="'+L.ph+'">'+
 '<button class="play-btn" style="width:100%;background:'+CFG.ansColor+';color:#000" onclick="submitText()">'+L.answer+'</button>';
@@ -692,7 +714,7 @@ b.onclick=()=>checkAns(a,img,idx,tx,ty,area);
 c.appendChild(b);
 });
 }
-document.getElementById('qModal')._ctx={img,idx,tx,ty,area};
+document.getElementById('qModal')._ctx={img,idx,tx,ty,area,qIdx};
 document.getElementById('qModal').style.display='flex';
 if(window.MathJax&&MathJax.typesetPromise) {
     try { MathJax.typesetPromise([document.getElementById('qText')]); } catch(e){}
@@ -711,19 +733,57 @@ if(a===curTargetQ[1])correct({img,idx,tx,ty,area});else wrong({img,idx,tx,ty,are
 
 function correct(ctx){
 playSound('win');
-document.getElementById('qModal').style.display='none';
-ctx.img.style.visibility='visible';
-placeItem(ctx.img,ctx.idx,ctx.tx,ctx.ty,ctx.area);
+
+const poolIndex = availableQuestions.indexOf(ctx.qIdx);
+if(poolIndex > -1) availableQuestions.splice(poolIndex, 1);
+
+const mb = document.getElementById('modalBox');
+const oldShadow = mb.style.boxShadow;
+const oldBorder = mb.style.border;
+
+mb.style.boxShadow = '0 0 40px ' + (CFG.correctColor || '#00ff00');
+mb.style.border = '2px solid ' + (CFG.correctColor || '#00ff00');
+
+setTimeout(() => {
+    mb.style.boxShadow = oldShadow;
+    mb.style.border = oldBorder;
+    document.getElementById('qModal').style.display='none';
+    ctx.img.style.visibility='visible';
+    placeItem(ctx.img,ctx.idx,ctx.tx,ctx.ty,ctx.area);
+}, 500);
 }
+
 function wrong(ctx){
 playSound('lose');
-document.getElementById('wrongMsg').style.display='block';
-if(CFG.lives>0){curLives--;document.getElementById('livesTxt').innerText=repeatIcon();
-if(curLives<=0){document.getElementById('qModal').style.display='none';gameOver(false);return;}}
+const mb = document.getElementById('modalBox');
+const oldShadow = mb.style.boxShadow;
+const oldBorder = mb.style.border;
+
+mb.style.boxShadow = '0 0 40px ' + (CFG.wrongColor || '#ff3366');
+mb.style.border = '2px solid ' + (CFG.wrongColor || '#ff3366');
+
+const wm = document.getElementById('wrongMsg');
+wm.style.display='block';
+wm.style.color = (CFG.wrongColor || '#ff3366');
+wm.style.textShadow = '0 0 10px ' + (CFG.wrongColor || '#ff3366');
+
+if(CFG.lives>0){
+    curLives--;
+    document.getElementById('livesTxt').innerText=repeatIcon();
+    if(curLives<=0){
+        setTimeout(()=>{
+            document.getElementById('qModal').style.display='none';
+            gameOver(false);
+        }, 800);
+        return;
+    }
+}
 setTimeout(()=>{
-document.getElementById('qModal').style.display='none';
-ctx.img.style.visibility='visible';
-returnToTray(ctx.img);
+    mb.style.boxShadow = oldShadow;
+    mb.style.border = oldBorder;
+    document.getElementById('qModal').style.display='none';
+    ctx.img.style.visibility='visible';
+    returnToTray(ctx.img);
 },1200);
 }
 
@@ -736,7 +796,7 @@ img.style.top=(CFG.targets[idx].y)+'%';
 img.style.transform='translate(-50%,-50%)';
 img.style.width=(CFG.targets[idx].w || 15)+'%';
 img.style.height='auto';
-img.style.filter='drop-shadow(0 0 15px #00ff00)';
+img.style.filter='none';
 img.style.pointerEvents='none';
 document.getElementById('playArea').appendChild(img);
 placed++;
@@ -756,6 +816,9 @@ document.getElementById('playArea').style.display='block';
 document.getElementById('gameUI').style.display='flex';
 if(!EDITOR) document.getElementById('markerLayer').innerHTML='';
 placed=0;curLives=CFG.lives;curTime=CFG.time;
+
+availableQuestions = Array.from({length: CFG.questions.length}, (_, i) => i);
+
 if(CFG.lives>0)document.getElementById('livesTxt').innerText=repeatIcon();
 if(CFG.time>0){
 document.getElementById('timerTxt').innerText=curTime;
