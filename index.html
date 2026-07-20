@@ -397,10 +397,13 @@ body{margin:0;overflow:hidden;user-select:none;color:#fff;height:100vh;width:100
 .item.dragging{position:fixed;z-index:100;cursor:grabbing}
 .shake{animation:shake .4s}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-.marker{position:absolute;border:2px dashed #00ff00;transform:translate(-50%,-50%);cursor:move;z-index:60;}
-.marker img.ghost{width:100%;height:auto;display:block;opacity:0.6;pointer-events:none;}
-.resizer{position:absolute;right:-6px;bottom:-6px;width:14px;height:14px;background:#fff;border:2px solid #00ff00;border-radius:50%;cursor:se-resize;z-index:70;}
-.rot-controls{position:absolute;bottom:-35px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:80;}
+.marker{position:absolute;border:2px dashed transparent;transform:translate(-50%,-50%);cursor:pointer;z-index:60;}
+.marker.active{border-color:#00ff00;cursor:move;z-index:75;}
+.marker img.ghost{width:100%;height:auto;display:block;opacity:0.8;pointer-events:none;}
+.resizer{display:none;position:absolute;right:-6px;bottom:-6px;width:14px;height:14px;background:#fff;border:2px solid #00ff00;border-radius:50%;cursor:se-resize;z-index:70;}
+.marker.active .resizer{display:block;}
+.rot-controls{display:none;position:absolute;bottom:-35px;left:50%;transform:translateX(-50%);gap:8px;z-index:80;}
+.marker.active .rot-controls{display:flex;}
 .rot-btn{background:#000;color:#00ff00;border:1px solid #00ff00;border-radius:4px;cursor:pointer;font-size:16px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;pointer-events:auto;}
 .rot-btn:hover{background:#00ff00;color:#000;}
 .screen{position:absolute;inset:0;z-index:200;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;box-sizing:border-box}
@@ -458,6 +461,12 @@ let placed=0, curTime=0, curLives=0, timerInt=null;
 let curDrag=null, curTargetQ=null, curItemIdx=-1, startX=0, startY=0;
 let audioCtx=null;
 let availableQuestions=[];
+
+window.addEventListener('pointerdown', e => {
+    if (EDITOR && !e.target.closest('.marker')) {
+        document.querySelectorAll('.marker').forEach(el => el.classList.remove('active'));
+    }
+});
 
 function playSound(type){
 try{
@@ -609,6 +618,11 @@ layer.appendChild(m);
 
 function makeMarkerDraggable(m,i){
 m.addEventListener('pointerdown',e=>{
+    document.querySelectorAll('.marker').forEach(el => {
+        if (el !== m) el.classList.remove('active');
+    });
+    m.classList.add('active');
+
 if(e.target.closest('.rot-btn') || e.target.classList.contains('resizer')) return;
 e.preventDefault();try{m.setPointerCapture(e.pointerId);}catch(err){}
 const move=ev=>{
@@ -725,7 +739,12 @@ if(availableQuestions.length === 0) {
     availableQuestions = Array.from({length: CFG.questions.length}, (_, i) => i);
 }
 
-let qIdx = availableQuestions[0]; // Всегда строгий порядок
+let qIdx;
+if (EDITOR) {
+    qIdx = idx < CFG.questions.length ? idx : (idx % CFG.questions.length);
+} else {
+    qIdx = availableQuestions[0]; // Всегда строгий порядок
+}
 
 curTargetQ = CFG.questions[qIdx];
 document.getElementById('qText').innerHTML=curTargetQ[0];
