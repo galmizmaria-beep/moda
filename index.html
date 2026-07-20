@@ -519,7 +519,7 @@ layer.appendChild(m);
 
 function makeMarkerDraggable(m,i){
 m.addEventListener('pointerdown',e=>{
-e.preventDefault();m.setPointerCapture(e.pointerId);
+e.preventDefault();try{m.setPointerCapture(e.pointerId);}catch(err){}
 const move=ev=>{
 const r=document.getElementById('playArea').getBoundingClientRect();
 let x=((ev.clientX-r.left)/r.width)*100;
@@ -556,7 +556,7 @@ img.classList.add('dragging');
 img.style.left=r.left+'px';img.style.top=r.top+'px';
 img.style.width=r.width+'px';img.style.height=r.height+'px';
 document.body.appendChild(img);
-img.setPointerCapture(e.pointerId);
+try{img.setPointerCapture(e.pointerId);}catch(err){}
 const move=ev=>{
 img.style.left=(ev.clientX-r.width/2)+'px';
 img.style.top=(ev.clientY-r.height/2)+'px';
@@ -720,7 +720,7 @@ iframe.srcdoc=buildGameDoc(true);
 function exportForGenially(){
 const cfg=collectConfig();
 let doc=buildGameDoc(false);
-const inject='<script>CFG='+JSON.stringify(cfg)+';EDITOR=false;applyConfig();<\\/script>';
+const inject='<script>CFG='+JSON.stringify(cfg)+';EDITOR=false;applyConfig();<\/script>';
 doc=doc.replace('</body>',inject+'</body>');
 
 // Кодируем документ в base64 data URI — это самый надёжный способ для Genially,
