@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -179,6 +180,7 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 
 <div class="section">
 <div class="section-title">Графика (Формат 16:9)</div>
+<div class="form-group" style="margin-bottom:10px"><label>Качество картинок: <span id="img-q-val">80%</span></label><input type="range" id="cfg-imgQuality" min="10" max="100" value="80" oninput="document.getElementById('img-q-val').innerText=this.value+'%'"></div>
 <div class="form-group" style="margin-bottom:10px"><div class="file-btn" id="lbl-bg">Фон игры (на весь экран)<input type="file" accept="image/*" onchange="processImg(this,'bg')"></div></div>
 <div class="form-group" style="margin-bottom:10px"><div class="file-btn" id="lbl-char">Персонаж (подсказка)<input type="file" accept="image/*" onchange="processImg(this,'char')"></div></div>
 <div class="form-group"><label>Прозрачность персонажа: <span id="op-val">40%</span></label><input type="range" id="cfg-opacity" min="10" max="100" value="40" oninput="document.getElementById('op-val').innerText=this.value+'%';pushUpdate()"></div>
@@ -186,7 +188,7 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 
 <div class="section">
 <div class="section-title">Вопросы ($ = формулы)</div>
-<label class="toggle" style="margin-bottom:10px"><input type="checkbox" id="cfg-randomQ" checked onchange="pushUpdate()"> Случайный порядок вопросов</label>
+<label class="toggle" style="margin-bottom:10px"><input type="checkbox" id="cfg-randomQ" checked onchange="pushUpdate()"> Случайный порядок вопросов (иначе — строго по порядку)</label>
 <textarea id="cfg-questions" oninput="pushUpdate()">Сколько будет 2+2? | 4 | 5 | 6
 Вычислите $\frac{10}{2}$: | 5
 Что такое $x$, если $x+2=4$? | 2 | 4 | -2
@@ -198,7 +200,7 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 <div class="section-title">Элементы одежды</div>
 <div class="file-btn">Добавить элемент (PNG без фона)<input type="file" accept="image/png,image/webp" onchange="addClothingItem(this)"></div>
 <div class="items-grid" id="items-container"></div>
-<div class="hint">В предпросмотре справа перетащите зелёные маркеры на нужные места, потяните за белый кружок в углу для размера, и нажимайте на стрелочки внизу маркера для поворота.</div>
+<div class="hint">В предпросмотре справа перетащите зелёные маркеры на нужные места, потяните за белый кружок для размера и используйте стрелочки для вращения.</div>
 </div>
 
 <div style="text-align:center;font-size:11px;color:var(--text-muted);margin-top:20px">© Гальмиз Мария Александровна</div>
@@ -244,6 +246,8 @@ function processImg(input,key){
     const file=input.files[0];if(!file)return;
     const label=input.parentElement;label.style.color='#00f0ff';
     const reader=new FileReader();
+    const quality = parseInt(document.getElementById('cfg-imgQuality').value) / 100;
+    
     reader.onload=e=>{
         const img=new Image();
         img.onload=()=>{
@@ -254,9 +258,11 @@ function processImg(input,key){
             canvas.width=w;canvas.height=h;
             canvas.getContext('2d').drawImage(img,0,0,w,h);
             
-            if(key==='bg')gameData.imgBg=canvas.toDataURL('image/jpeg', 0.95);
-            if(key==='titleBg')gameData.imgTitleBg=canvas.toDataURL('image/jpeg', 0.95);
-            if(key==='char')gameData.imgChar=canvas.toDataURL('image/png');
+            const format = (key==='bg'||key==='titleBg') ? 'image/jpeg' : 'image/webp';
+            
+            if(key==='bg')gameData.imgBg=canvas.toDataURL(format, quality);
+            if(key==='titleBg')gameData.imgTitleBg=canvas.toDataURL(format, quality);
+            if(key==='char')gameData.imgChar=canvas.toDataURL(format, quality);
             
             label.innerHTML=`Загружено ✓<input type="file" accept="image/*" onchange="processImg(this,'${key}')">`;
             pushUpdate();
@@ -269,6 +275,8 @@ function processImg(input,key){
 function addClothingItem(input){
     const file=input.files[0];if(!file)return;
     const reader=new FileReader();
+    const quality = parseInt(document.getElementById('cfg-imgQuality').value) / 100;
+    
     reader.onload=e=>{
         const img=new Image();
         img.onload=()=>{
@@ -278,7 +286,7 @@ function addClothingItem(input){
             canvas.width=w;canvas.height=h;
             canvas.getContext('2d').drawImage(img,0,0,w,h);
             
-            gameData.items.push(canvas.toDataURL('image/png'));
+            gameData.items.push(canvas.toDataURL('image/webp', quality));
             gameData.targets.push({x:45+gameData.items.length*3, y:40, w:15, r:0});
             renderItemsList();
             pushUpdate();
@@ -395,8 +403,9 @@ body{margin:0;overflow:hidden;user-select:none;color:#fff;height:100vh;width:100
 .marker{position:absolute;border:2px dashed #00ff00;transform:translate(-50%,-50%);cursor:move;z-index:60;}
 .marker img.ghost{width:100%;height:auto;display:block;opacity:0.6;pointer-events:none;}
 .resizer{position:absolute;right:-6px;bottom:-6px;width:14px;height:14px;background:#fff;border:2px solid #00ff00;border-radius:50%;cursor:se-resize;z-index:70;}
-.rot-controls{position:absolute;bottom:-25px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:75;}
-.rot-btn{width:20px;height:20px;background:#fff;border:2px solid #00ff00;border-radius:50%;cursor:pointer;display:flex;justify-content:center;align-items:center;font-size:12px;font-weight:bold;color:#000;user-select:none;}
+.rot-controls{position:absolute;bottom:-35px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:80;}
+.rot-btn{background:#000;color:#00ff00;border:1px solid #00ff00;border-radius:4px;cursor:pointer;font-size:16px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;pointer-events:auto;}
+.rot-btn:hover{background:#00ff00;color:#000;}
 .screen{position:absolute;inset:0;z-index:200;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;box-sizing:border-box}
 .screen p{font-size:22px;max-width:600px;margin:0 0 30px;}
 .play-btn{border:none;padding:15px 40px;border-radius:30px;font-weight:700;font-size:20px;color:#fff;cursor:pointer;text-transform:uppercase;transition:.2s}
@@ -561,6 +570,15 @@ s.innerHTML='<h1 class="'+animClass+'" style="color:'+CFG.titleColor+';font-size
 
 function esc(t){const d=document.createElement('div');d.innerText=t||'';return d.innerHTML;}
 
+window.rotateMarker = function(e, i, delta) {
+    e.stopPropagation();
+    e.preventDefault();
+    let t = CFG.targets[i];
+    t.r = (t.r || 0) + delta;
+    document.querySelectorAll('.marker')[i].querySelector('.ghost').style.transform = 'rotate(' + t.r + 'deg)';
+    parent.postMessage({type:'targetRotated', index:i, r:t.r}, '*');
+};
+
 function buildMarkers(){
 const layer=document.getElementById('markerLayer');
 layer.innerHTML='';
@@ -576,26 +594,15 @@ ghost.className='ghost';
 ghost.style.transform = 'rotate(' + (t.r || 0) + 'deg)';
 m.appendChild(ghost);
 
+const rotControls = document.createElement('div');
+rotControls.className = 'rot-controls';
+rotControls.innerHTML = '<div class="rot-btn" onclick="rotateMarker(event, '+i+', -15)">↺</div><div class="rot-btn" onclick="rotateMarker(event, '+i+', 15)">↻</div>';
+rotControls.addEventListener('pointerdown', e => e.stopPropagation());
+m.appendChild(rotControls);
+
 const resizer=document.createElement('div');
 resizer.className='resizer';
 m.appendChild(resizer);
-
-const rotControls = document.createElement('div');
-rotControls.className = 'rot-controls';
-
-const btnLeft = document.createElement('div');
-btnLeft.className = 'rot-btn';
-btnLeft.innerHTML = '↺';
-btnLeft.onpointerdown = (e) => { e.stopPropagation(); rotateTarget(i, ghost, -15); };
-
-const btnRight = document.createElement('div');
-btnRight.className = 'rot-btn';
-btnRight.innerHTML = '↻';
-btnRight.onpointerdown = (e) => { e.stopPropagation(); rotateTarget(i, ghost, 15); };
-
-rotControls.appendChild(btnLeft);
-rotControls.appendChild(btnRight);
-m.appendChild(rotControls);
 
 makeMarkerDraggable(m,i);
 makeMarkerResizable(m,resizer,i);
@@ -603,16 +610,9 @@ layer.appendChild(m);
 });
 }
 
-function rotateTarget(i, ghost, delta) {
-    let r = CFG.targets[i].r || 0;
-    r += delta;
-    CFG.targets[i].r = r;
-    ghost.style.transform = 'rotate(' + r + 'deg)';
-    parent.postMessage({type:'targetRotated', index:i, r:r}, '*');
-}
-
 function makeMarkerDraggable(m,i){
 m.addEventListener('pointerdown',e=>{
+if(e.target.closest('.rot-btn') || e.target.classList.contains('resizer')) return;
 e.preventDefault();try{m.setPointerCapture(e.pointerId);}catch(err){}
 const move=ev=>{
 const r=document.getElementById('playArea').getBoundingClientRect();
@@ -620,7 +620,8 @@ let x=((ev.clientX-r.left)/r.width)*100;
 let y=((ev.clientY-r.top)/r.height)*100;
 x=Math.max(0,Math.min(100,x));y=Math.max(0,Math.min(100,y));
 m.style.left=x+'%';m.style.top=y+'%';
-CFG.targets[i]={x,y,w:CFG.targets[i].w, r:CFG.targets[i].r};
+CFG.targets[i].x = x;
+CFG.targets[i].y = y;
 parent.postMessage({type:'targetMoved',index:i,x,y},'*');
 };
 const up=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);};
@@ -660,7 +661,7 @@ tray.innerHTML='';
 CFG.items.forEach((src,i)=>{
 const img=document.createElement('img');
 img.src=src;img.className='item';img.dataset.idx=i;
-makeItemDraggable(img,i);
+if(!EDITOR) makeItemDraggable(img,i);
 tray.appendChild(img);
 });
 }
@@ -712,12 +713,6 @@ document.getElementById('tray').appendChild(img);
 }
 
 function triggerQuestion(img,idx,tx,ty,area){
-if(EDITOR) {
-    img.classList.add('shake'); 
-    setTimeout(()=>{img.classList.remove('shake');returnToTray(img);},400);
-    return;
-}
-
 img.style.visibility='hidden';
 if(CFG.questions.length===0){placeItem(img,idx,tx,ty,area);return;}
 
@@ -739,7 +734,7 @@ document.getElementById('wrongMsg').style.display='none';
 document.getElementById('wrongMsg').innerText=L.wrong;
 
 if(curTargetQ.length===2){
-c.innerHTML='<input type="text" id="tInput" name="q_ans" autocomplete="off" spellcheck="false" data-lpignore="true" class="text-input" style="background:'+CFG.inputBg+';border:1px solid '+CFG.ansColor+'" placeholder="'+L.ph+'">'+
+c.innerHTML='<input type="text" id="tInput" autocomplete="off" class="text-input" style="background:'+CFG.inputBg+';border:1px solid '+CFG.ansColor+'" placeholder="'+L.ph+'">'+
 '<button class="play-btn" style="width:100%;background:'+CFG.ansColor+';color:#000" onclick="submitText()">'+L.answer+'</button>';
 }else{
 let ans=curTargetQ.slice(1);
@@ -830,7 +825,8 @@ img.classList.add('placed');
 img.style.position='absolute';
 img.style.left=(CFG.targets[idx].x)+'%';
 img.style.top=(CFG.targets[idx].y)+'%';
-img.style.transform='translate(-50%,-50%) rotate(' + (CFG.targets[idx].r || 0) + 'deg)';
+const rot = CFG.targets[idx].r || 0;
+img.style.transform='translate(-50%,-50%) rotate(' + rot + 'deg)';
 img.style.width=(CFG.targets[idx].w || 15)+'%';
 img.style.height='auto';
 img.style.filter='none';
@@ -852,7 +848,29 @@ document.getElementById('playArea').style.display='block';
 
 document.getElementById('gameUI').style.display='flex';
 if(!EDITOR) document.getElementById('markerLayer').innerHTML='';
-placed=0;curLives=CFG.lives;curTime=CFG'#ff3366';
+placed=0;curLives=CFG.lives;curTime=CFG.time;
+
+availableQuestions = Array.from({length: CFG.questions.length}, (_, i) => i);
+
+if(CFG.lives>0)document.getElementById('livesTxt').innerText=repeatIcon();
+if(CFG.time>0){
+document.getElementById('timerTxt').innerText=curTime;
+clearInterval(timerInt);
+timerInt=setInterval(()=>{curTime--;document.getElementById('timerTxt').innerText=curTime;if(curTime<=0)gameOver(false);},1000);
+}
+buildTray(false);
+}
+
+function gameOver(isWin){
+clearInterval(timerInt);
+document.getElementById('playArea').style.display='none';
+document.getElementById('gameUI').style.display='none';
+const es=document.getElementById('endScreen');
+es.style.display='flex';
+es.style.background=CFG.imgBg?'rgba(6,2,12,.92)':'#06020c';
+const t=document.getElementById('endTitle');
+t.innerText=isWin?CFG.txtWin:(curTime<=0?L.timeout:CFG.txtLose);
+var wc=CFG.txtWinColor||'#00ff00', lc=CFG.txtLoseColor||'#ff3366';
 t.style.color=isWin?wc:lc;
 t.style.textShadow='0 0 20px '+(isWin?wc:lc);
 t.style.fontSize='38px';t.style.marginBottom='30px';
