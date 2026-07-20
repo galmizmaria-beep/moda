@@ -54,7 +54,7 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 
 <div class="section">
 <div class="section-title">Язык интерфейса</div>
-<select id="cfg-lang" onchange="pushUpdate()">
+<select id="cfg-lang" onchange="changeLangTexts(); pushUpdate()">
 <option value="ru">Русский</option>
 <option value="en">English</option>
 <option value="ko">한국어 (Корейский)</option>
@@ -69,10 +69,11 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 <div class="form-group" style="margin-bottom:10px"><label>Описание</label><input type="text" id="cfg-desc" value="Одень персонажа, решая задачи!" oninput="pushUpdate()"></div>
 <div class="form-row">
 <div class="form-group"><label>Цвет названия</label><input type="color" id="cfg-titleColor" value="#00f0ff" oninput="pushUpdate()"></div>
+<div class="form-group"><label>Цвет описания</label><input type="color" id="cfg-descColor" value="#ffffff" oninput="pushUpdate()"></div>
 <div class="form-group"><label>Размер (px)</label><input type="number" id="cfg-titleSize" value="42" oninput="pushUpdate()"></div>
 </div>
 <div class="form-row">
-<div class="form-group"><label>Шрифт названия</label>
+<div class="form-group"><label>Шрифт игры</label>
 <select id="cfg-titleFont" onchange="pushUpdate()">
 <option value="Orbitron">Orbitron</option>
 <option value="Rajdhani">Rajdhani</option>
@@ -164,11 +165,23 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 let gameData={imgBg:'',imgChar:'',imgTitleBg:'',items:[],targets:[]};
 let iframeReady=false;
 
-const LANG={
-ru:{q:'ВОПРОС',answer:'ОТВЕТИТЬ',wrong:'НЕВЕРНО! ПОПРОБУЙ ЕЩЁ.',restart:'НАЧАТЬ ЗАНОВО',ph:'Ваш ответ...',timeout:'ВРЕМЯ ВЫШЛО!'},
-en:{q:'QUESTION',answer:'ANSWER',wrong:'WRONG! TRY AGAIN.',restart:'RESTART',ph:'Your answer...',timeout:'TIME OUT!'},
-ko:{q:'질문',answer:'대답하기',wrong:'틀렸습니다! 다시 시도하세요.',restart:'다시 시작',ph:'답을 입력하세요...',timeout:'시간 초과!'}
+const DEF_TEXTS = {
+  ru: { t: "Математическая Одежда", d: "Одень персонажа, решая задачи!", b: "ИГРАТЬ", w: "ОТЛИЧНАЯ РАБОТА!", l: "ПОПРОБУЙ СНОВА!" },
+  en: { t: "Math Dress Up", d: "Dress the character by solving math problems!", b: "PLAY", w: "EXCELLENT JOB!", l: "TRY AGAIN!" },
+  ko: { t: "수학 옷 입히기", d: "문제를 풀어 캐릭터에게 옷을 입혀주세요!", b: "놀다", w: "잘했어요!", l: "다시 시도하세요!" }
 };
+
+function changeLangTexts() {
+  const l = document.getElementById('cfg-lang').value;
+  const tx = DEF_TEXTS[l];
+  if(tx) {
+    document.getElementById('cfg-title').value = tx.t;
+    document.getElementById('cfg-desc').value = tx.d;
+    document.getElementById('cfg-btnPlay').value = tx.b;
+    document.getElementById('cfg-txtWin').value = tx.w;
+    document.getElementById('cfg-txtLose').value = tx.l;
+  }
+}
 
 function processImg(input,key){
 const file=input.files[0];if(!file)return;
@@ -220,6 +233,7 @@ useTitle:document.getElementById('cfg-useTitle').checked,
 title:document.getElementById('cfg-title').value,
 desc:document.getElementById('cfg-desc').value,
 titleColor:document.getElementById('cfg-titleColor').value,
+descColor:document.getElementById('cfg-descColor').value,
 titleSize:document.getElementById('cfg-titleSize').value,
 titleFont:document.getElementById('cfg-titleFont').value,
 titleAnim:document.getElementById('cfg-titleAnim').value,
@@ -267,10 +281,11 @@ window.MathJax={tex:{inlineMath:[['$','$']]},svg:{fontCache:'global'}};
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"><\/script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap');
-body{margin:0;font-family:'Rajdhani',sans-serif;overflow:hidden;user-select:none;color:#fff;height:100vh;width:100vw;background:#000}
+*, button, input { font-family: inherit; }
+body{margin:0;overflow:hidden;user-select:none;color:#fff;height:100vh;width:100vw;background:#000}
 #bgLayer{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0}
 .top-ui{position:absolute;top:20px;width:100%;display:flex;justify-content:space-between;padding:0 30px;box-sizing:border-box;z-index:50;pointer-events:none}
-.ui-box{background:rgba(0,0,0,.7);border-radius:10px;padding:8px 18px;font-family:'Orbitron';font-size:20px}
+.ui-box{background:rgba(0,0,0,.7);border-radius:10px;padding:8px 18px;font-size:20px}
 .char{position:absolute;left:50%;top:42%;transform:translate(-50%,-42%);height:70%;object-fit:contain;pointer-events:none;z-index:1}
 .tray{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);width:80%;height:14%;background:rgba(0,0,0,.5);border:2px dashed rgba(255,255,255,.3);border-radius:15px;display:flex;align-items:center;justify-content:center;gap:15px;z-index:5}
 .item{height:80%;object-fit:contain;cursor:grab;filter:drop-shadow(0 0 8px #a626ff);touch-action:none;transition:transform .1s}
@@ -278,10 +293,10 @@ body{margin:0;font-family:'Rajdhani',sans-serif;overflow:hidden;user-select:none
 .item.dragging{position:fixed;z-index:100;cursor:grabbing}
 .shake{animation:shake .4s}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-.marker{position:absolute;width:40px;height:40px;background:rgba(0,255,0,.3);border:2px dashed #00ff00;border-radius:50%;transform:translate(-50%,-50%);cursor:move;z-index:60;display:flex;align-items:center;justify-content:center;font-size:12px;color:#00ff00;font-family:'Orbitron'}
+.marker{position:absolute;width:40px;height:40px;background:rgba(0,255,0,.3);border:2px dashed #00ff00;border-radius:50%;transform:translate(-50%,-50%);cursor:move;z-index:60;display:flex;align-items:center;justify-content:center;font-size:12px;color:#00ff00}
 .screen{position:absolute;inset:0;z-index:200;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;box-sizing:border-box}
-.screen p{font-size:22px;max-width:600px;margin:0 0 30px;color:#fff}
-.play-btn{border:none;padding:15px 40px;border-radius:30px;font-family:'Orbitron';font-weight:700;font-size:20px;color:#fff;cursor:pointer;text-transform:uppercase;transition:.2s}
+.screen p{font-size:22px;max-width:600px;margin:0 0 30px;}
+.play-btn{border:none;padding:15px 40px;border-radius:30px;font-weight:700;font-size:20px;color:#fff;cursor:pointer;text-transform:uppercase;transition:.2s}
 .play-btn:hover{transform:scale(1.05)}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
@@ -291,10 +306,10 @@ body{margin:0;font-family:'Rajdhani',sans-serif;overflow:hidden;user-select:none
 .anim-glowAnim{animation:glowAnim 1.5s infinite}
 .modal-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.8);z-index:150;justify-content:center;align-items:center}
 .modal{padding:30px;border-radius:15px;width:90%;max-width:500px;text-align:center}
-.modal h2{margin:0 0 15px;font-family:'Orbitron';font-size:24px}
+.modal h2{margin:0 0 15px;font-size:24px}
 .q-text{font-size:22px;margin-bottom:20px}
 .ans-grid{display:flex;flex-direction:column;gap:10px}
-.ans-btn{background:rgba(255,255,255,.1);padding:12px;color:#fff;font-size:18px;cursor:pointer;border-radius:8px;font-family:'Rajdhani';transition:.2s}
+.ans-btn{background:rgba(255,255,255,.1);padding:12px;color:#fff;font-size:18px;cursor:pointer;border-radius:8px;transition:.2s}
 .ans-btn:hover{background:rgba(255,255,255,.25)}
 .text-input{width:100%;padding:12px;font-size:18px;border-radius:8px;color:#fff;box-sizing:border-box;margin-bottom:10px;text-align:center}
 #wrongMsg{font-weight:bold;margin-top:15px;display:none;text-shadow:0 0 10px red}
@@ -343,7 +358,6 @@ en:{q:'QUESTION',answer:'ANSWER',wrong:'WRONG! TRY AGAIN.',restart:'RESTART',ph:
 ko:{q:'질문',answer:'대답하기',wrong:'틀렸습니다! 다시 시도하세요.',restart:'다시 시작',ph:'답을 입력하세요...',timeout:'시간 초과!'}
 };
 
-// Приём конфигурации от редактора (без перезагрузки = без мерцания)
 window.addEventListener('message',e=>{
 if(e.data && e.data.type==='config'){
 CFG=e.data.cfg; EDITOR=!!e.data.editor;
@@ -353,6 +367,7 @@ applyConfig();
 
 function applyConfig(){
 L=LANGS[CFG.lang]||LANGS.ru;
+document.body.style.fontFamily = CFG.titleFont;
 
 // Фон
 const bg=document.getElementById('bgLayer');
@@ -388,7 +403,6 @@ document.getElementById('qTitle').innerText=L.q;
 // Титульный экран
 buildStartScreen();
 
-// В режиме редактора показываем персонажа+маркеры для настройки позиций
 if(EDITOR){
 if(CFG.useTitle){
 document.getElementById('startScreen').style.display='flex';
@@ -397,8 +411,12 @@ document.getElementById('playArea').style.display='none';
 document.getElementById('startScreen').style.display='none';
 document.getElementById('playArea').style.display='block';
 }
+// В редакторе ВСЕГДА показываем таймер и жизни для настройки
+document.getElementById('gameUI').style.display='flex';
+document.getElementById('livesTxt').innerText=CFG.lives>0?Array(CFG.lives).fill(CFG.lifeIcon).join(''):'';
+document.getElementById('timerTxt').innerText=CFG.time>0?CFG.time:'';
+
 document.getElementById('endScreen').style.display='none';
-document.getElementById('gameUI').style.display='none';
 buildMarkers();
 buildTray(true);
 }else{
@@ -416,14 +434,13 @@ bgStyle='background:linear-gradient(rgba(6,2,12,'+(1-CFG.titleBgOp)+'),rgba(6,2,
 }else{bgStyle='background:rgba(10,5,24,'+(CFG.titleBgOp)+');backdrop-filter:blur(4px);';}
 s.setAttribute('style','position:absolute;inset:0;z-index:200;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;box-sizing:border-box;'+bgStyle);
 const animClass=CFG.titleAnim!=='none'?'anim-'+CFG.titleAnim:'';
-s.innerHTML='<h1 class="'+animClass+'" style="color:'+CFG.titleColor+';font-size:'+CFG.titleSize+'px;font-family:\\''+CFG.titleFont+'\\';text-shadow:0 0 20px '+CFG.titleColor+';margin-bottom:15px">'+esc(CFG.title)+'</h1>'+
-'<p>'+esc(CFG.desc)+'</p>'+
+s.innerHTML='<h1 class="'+animClass+'" style="color:'+CFG.titleColor+';font-size:'+CFG.titleSize+'px;text-shadow:0 0 20px '+CFG.titleColor+';margin-bottom:15px">'+esc(CFG.title)+'</h1>'+
+'<p style="color:'+CFG.descColor+'">'+esc(CFG.desc)+'</p>'+
 '<button class="play-btn" style="background:'+CFG.playBtnColor+';box-shadow:0 0 25px '+CFG.playBtnGlow+'" onclick="startGame()">'+esc(CFG.btnPlay)+'</button>';
 }
 
 function esc(t){const d=document.createElement('div');d.innerText=t||'';return d.innerHTML;}
 
-// Маркеры (редактор фиксирует правильные позиции одежды)
 function buildMarkers(){
 const layer=document.getElementById('markerLayer');
 layer.innerHTML='';
@@ -455,7 +472,6 @@ m.addEventListener('pointerup',up);
 });
 }
 
-// Поднос с одеждой
 function buildTray(showAll){
 const tray=document.getElementById('tray');
 tray.innerHTML='';
@@ -500,10 +516,8 @@ const ty=area.top+area.height*(t.y/100);
 const dist=Math.hypot(ev.clientX-tx,ev.clientY-ty);
 const tol=area.width*0.12;
 if(dist<tol){
-// Правильно размещено -> вопрос
 triggerQuestion(img,idx,tx,ty,area);
 }else{
-// Неверно -> качается и возвращается
 img.classList.remove('dragging');
 img.classList.add('shake');
 setTimeout(()=>{img.classList.remove('shake');returnToTray(img);},400);
@@ -597,7 +611,7 @@ document.getElementById('endScreen').style.display='none';
 document.getElementById('playArea').style.display='block';
 if(EDITOR)return;
 document.getElementById('gameUI').style.display='flex';
-document.getElementById('markerLayer').innerHTML=''; // скрываем маркеры в игре
+document.getElementById('markerLayer').innerHTML='';
 placed=0;curLives=CFG.lives;curTime=CFG.time;
 if(CFG.lives>0)document.getElementById('livesTxt').innerText=repeatIcon();
 if(CFG.time>0){
@@ -619,34 +633,33 @@ const t=document.getElementById('endTitle');
 t.innerText=isWin?CFG.txtWin:(curTime<=0?L.timeout:CFG.txtLose);
 t.style.color=isWin?'#00ff00':'#ff3366';
 t.style.textShadow='0 0 20px '+(isWin?'#00ff00':'#ff3366');
-t.style.fontFamily='Orbitron';t.style.fontSize='38px';t.style.marginBottom='30px';
+t.style.fontSize='38px';t.style.marginBottom='30px';
 document.getElementById('restartBtn').innerText=L.restart;
 document.getElementById('restartBtn').style.background=CFG.playBtnColor;
 document.getElementById('restartBtn').style.boxShadow='0 0 25px '+CFG.playBtnGlow;
 }
 
-// Сообщаем редактору что готовы принимать конфиг
 parent.postMessage({type:'ready'},'*');
 <\/script>
 </body></html>`;
 }
 
-// Инициализация iframe одним документом (грузится ОДИН раз, дальше только postMessage)
 function initPreview(){
 const iframe=document.getElementById('game-preview');
 iframe.srcdoc=buildGameDoc(true);
 }
 
 function exportForGenially(){
-// Собираем автономную версию: конфиг вшивается прямо в документ
 const cfg=collectConfig();
 let doc=buildGameDoc(false);
-// Вставляем автозапуск конфига напрямую (избавляет от проблемы с postMessage и черным экраном в Genially)
 const inject='<script>CFG='+JSON.stringify(cfg)+';EDITOR=false;applyConfig();<\\/script>';
 doc=doc.replace('</body>',inject+'</body>');
-const esc=doc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-const ifr='<iframe srcdoc="'+esc+'" width="100%" height="600px" frameborder="0" allowfullscreen allow="autoplay"></iframe>';
-navigator.clipboard.writeText(ifr).then(()=>{
+
+// Оборачиваем в div + base64 iframe — этот метод 100% не выдает черный экран в Genially
+const encodedDoc = btoa(unescape(encodeURIComponent(doc)));
+const finalHtml = `<div style="position:relative; width:100%; height:600px; overflow:hidden;"><iframe src="data:text/html;base64,${encodedDoc}" width="100%" height="100%" frameborder="0" allowfullscreen allow="autoplay" style="border:none; overflow:hidden;"></iframe></div>`;
+
+navigator.clipboard.writeText(finalHtml).then(()=>{
 const b=document.getElementById('copyBtn');
 b.innerText='СКОПИРОВАНО! ВСТАВЬТЕ В GENIALLY';b.style.background='#00ff00';
 setTimeout(()=>{b.innerText='Скопировать код для Genially';b.style.background='var(--primary)';},4000);
