@@ -725,7 +725,8 @@ parent.postMessage({type:'ready'},'*');
 </${'script'}>
 </body></html>`;
 }
-function exportForGenially(){
+
+  function exportForGenially(){
     const cfg = collectConfig();
     let doc = buildGameDoc(false);
     
@@ -764,7 +765,6 @@ function exportForGenially(){
         alert('Размер игры слишком большой! Буфер обмена переполнен. Сделайте картинки меньше по весу.');
     });
 }
-
 window.onload=initPreview;
 </script>
 </body>
