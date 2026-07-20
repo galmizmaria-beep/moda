@@ -702,7 +702,7 @@ document.getElementById('wrongMsg').style.display='none';
 document.getElementById('wrongMsg').innerText=L.wrong;
 
 if(curTargetQ.length===2){
-c.innerHTML='<input type="text" id="tInput" class="text-input" style="background:'+CFG.inputBg+';border:1px solid '+CFG.ansColor+'" placeholder="'+L.ph+'">'+
+c.innerHTML='<input type="text" id="tInput" autocomplete="off" class="text-input" style="background:'+CFG.inputBg+';border:1px solid '+CFG.ansColor+'" placeholder="'+L.ph+'">'+
 '<button class="play-btn" style="width:100%;background:'+CFG.ansColor+';color:#000" onclick="submitText()">'+L.answer+'</button>';
 }else{
 let ans=curTargetQ.slice(1);
