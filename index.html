@@ -121,7 +121,24 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 <div class="form-group"><label>Цвет таймера</label><input type="color" id="cfg-timerColor" value="#00f0ff" oninput="pushUpdate()"></div>
 <div class="form-group"><label>Цвет рамки жизней</label><input type="color" id="cfg-livesColor" value="#ff3366" oninput="pushUpdate()"></div>
 </div>
-<div class="form-group"><label>Символ жизни</label><input type="text" id="cfg-lifeIcon" value="❤" oninput="pushUpdate()"></div>
+<div class="form-group"><label>Символ жизни</label>
+<select id="cfg-lifeIcon" onchange="pushUpdate()">
+<option value="❤">❤ Сердце</option>
+<option value="⭐">⭐ Звезда</option>
+<option value="★">★ Звезда (контур)</option>
+<option value="✨">✨ Искры</option>
+<option value="🌟">🌟 Блестящая звезда</option>
+<option value="💜">💜 Фиолетовое сердце</option>
+<option value="💙">💙 Синее сердце</option>
+<option value="🔥">🔥 Огонь</option>
+<option value="⚡">⚡ Молния</option>
+<option value="🍀">🍀 Клевер</option>
+<option value="🎈">🎈 Шарик</option>
+<option value="🌸">🌸 Цветок</option>
+<option value="💎">💎 Алмаз</option>
+<option value="🏆">🏆 Кубок</option>
+<option value="👑">👑 Корона</option>
+</select></div>
 </div>
 
 <div class="section">
@@ -138,8 +155,17 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 
 <div class="section">
 <div class="section-title">Тексты результатов</div>
-<div class="form-group" style="margin-bottom:10px"><label>Текст победы</label><input type="text" id="cfg-txtWin" value="ОТЛИЧНАЯ РАБОТА!" oninput="pushUpdate()"></div>
+<div class="form-row">
+<div class="form-group"><label>Текст победы</label><input type="text" id="cfg-txtWin" value="ОТЛИЧНАЯ РАБОТА!" oninput="pushUpdate()"></div>
+<div class="form-group" style="max-width:90px"><label>Цвет</label><input type="color" id="cfg-txtWinColor" value="#00ff00" oninput="pushUpdate()"></div>
+</div>
+<div class="form-row">
 <div class="form-group"><label>Текст поражения</label><input type="text" id="cfg-txtLose" value="ПОПРОБУЙ СНОВА!" oninput="pushUpdate()"></div>
+<div class="form-group" style="max-width:90px"><label>Цвет</label><input type="color" id="cfg-txtLoseColor" value="#ff3366" oninput="pushUpdate()"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Цвет текста кнопки "Заново"</label><input type="color" id="cfg-restartTextColor" value="#ffffff" oninput="pushUpdate()"></div>
+</div>
 </div>
 
 <div class="section">
@@ -270,7 +296,10 @@ ansColor:document.getElementById('cfg-ansColor').value,
 inputBg:document.getElementById('cfg-inputBg').value,
 txtWin:document.getElementById('cfg-txtWin').value,
 txtLose:document.getElementById('cfg-txtLose').value,
-opacity:document.getElementById('cfg-opacity').value/100,
+txtWinColor:document.getElementById('cfg-txtWinColor').value,
+txtLoseColor:document.getElementById('cfg-txtLoseColor').value,
+restartTextColor:document.getElementById('cfg-restartTextColor').value,
+opacity:document.getElementById('cfg-opacity').valueopacity:document.getElementById('cfg-opacity').value/100,
 questions,
 imgBg:gameData.imgBg,imgChar:gameData.imgChar,imgTitleBg:gameData.imgTitleBg,
 items:gameData.items,targets:gameData.targets
@@ -625,7 +654,7 @@ img.style.left=(CFG.targets[idx].x)+'%';
 img.style.top=(CFG.targets[idx].y)+'%';
 img.style.transform='translate(-50%,-50%)';
 img.style.width='';img.style.height='15%';
-img.style.filter='drop-shadow(0 0 15px #00ff00)';
+img.style.filter='drop-shadow(0 0 15img.style.filter='drop-shadow(0 0 15px #00ff00)';
 img.style.pointerEvents='none';
 document.getElementById('playArea').appendChild(img);
 placed++;
@@ -663,12 +692,14 @@ es.style.display='flex';
 es.style.background=CFG.imgBg?'rgba(6,2,12,.92)':'#06020c';
 const t=document.getElementById('endTitle');
 t.innerText=isWin?CFG.txtWin:(curTime<=0?L.timeout:CFG.txtLose);
-t.style.color=isWin?'#00ff00':'#ff3366';
-t.style.textShadow='0 0 20px '+(isWin?'#00ff00':'#ff3366');
+var wc=CFG.txtWinColor||'#00ff00', lc=CFG.txtLoseColor||'#ff3366';
+t.style.color=isWin?wc:lc;
+t.style.textShadow='0 0 20px '+(isWin?wc:lc);
 t.style.fontSize='38px';t.style.marginBottom='30px';
 document.getElementById('restartBtn').innerText=L.restart;
 document.getElementById('restartBtn').style.background=CFG.playBtnColor;
 document.getElementById('restartBtn').style.boxShadow='0 0 25px '+CFG.playBtnGlow;
+document.getElementById('restartBtn').style.color=CFG.restartTextColor||'#ffffff';
 }
 
 parent.postMessage({type:'ready'},'*');
@@ -687,9 +718,10 @@ let doc=buildGameDoc(false);
 const inject='<script>CFG='+JSON.stringify(cfg)+';EDITOR=false;applyConfig();<\\/script>';
 doc=doc.replace('</body>',inject+'</body>');
 
-// Надежный метод экспорта для Genially с использованием обычного iframe srcdoc и div-обертки 
-const esc = doc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-const finalHtml = `<div style="width:100%;height:600px;display:flex;justify-content:center;align-items:center;overflow:hidden;"><iframe srcdoc="${esc}" width="100%" height="100%" frameborder="0" allowfullscreen allow="autoplay" style="border:none; overflow:hidden; border-radius:10px;"></iframe></div>`;
+// Кодируем документ в base64 data URI — это самый надёжный способ для Genially,
+// т.к. не требует экранирования кавычек в srcdoc
+const b64='data:text/html;charset=utf-8;base64,'+btoa(unescape(encodeURIComponent(doc)));
+const finalHtml='<iframe src="'+b64+'" width="100%" height="600" frameborder="0" allowfullscreen allow="autoplay" style="border:none;overflow:hidden;border-radius:10px;"></iframe>';
 
 navigator.clipboard.writeText(finalHtml).then(()=>{
 const b=document.getElementById('copyBtn');
