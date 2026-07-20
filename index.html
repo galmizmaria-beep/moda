@@ -188,6 +188,7 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 
 <div class="section">
 <div class="section-title">Элементы одежды</div>
+<div class="form-group" style="margin-bottom:15px"><label>Размер одежды (на персонаже): <span id="size-val">15%</span></label><input type="range" id="cfg-itemSize" min="5" max="50" value="15" oninput="document.getElementById('size-val').innerText=this.value+'%';pushUpdate()"></div>
 <div class="file-btn">Добавить элемент (PNG без фона)<input type="file" accept="image/png,image/webp" onchange="addClothingItem(this)"></div>
 <div class="items-grid" id="items-container"></div>
 <div class="hint">В предпросмотре справа перетащите зелёные маркеры на нужные места персонажа — это зафиксирует правильное расположение одежды.</div>
@@ -239,14 +240,12 @@ function processImg(input,key){
         const img=new Image();
         img.onload=()=>{
             const canvas=document.createElement('canvas');
-            // Уменьшено разрешение и качество для уверенной работы в Genially
             const MAX=(key==='bg'||key==='titleBg')? 1000 : 500;
             let w=img.width,h=img.height;
             if(w>MAX){h*=MAX/w;w=MAX}
             canvas.width=w;canvas.height=h;
             canvas.getContext('2d').drawImage(img,0,0,w,h);
             
-            // Качество 0.7 - отличный баланс веса и визуала
             if(key==='bg')gameData.imgBg=canvas.toDataURL('image/jpeg', 0.7);
             if(key==='titleBg')gameData.imgTitleBg=canvas.toDataURL('image/jpeg', 0.7);
             if(key==='char')gameData.imgChar=canvas.toDataURL('image/webp', 0.7);
@@ -267,7 +266,6 @@ function addClothingItem(input){
         img.onload=()=>{
             const canvas=document.createElement('canvas');
             let w=img.width,h=img.height;
-            // Одежда до 250px
             if(w>250){h*=250/w;w=250}
             canvas.width=w;canvas.height=h;
             canvas.getContext('2d').drawImage(img,0,0,w,h);
@@ -323,6 +321,7 @@ function collectConfig(){
         btnRestart:document.getElementById('cfg-btnRestart').value,
         restartTextColor:document.getElementById('cfg-restartTextColor').value,
         opacity:document.getElementById('cfg-opacity').value/100,
+        itemSize:parseInt(document.getElementById('cfg-itemSize').value),
         questions,
         imgBg:gameData.imgBg,imgChar:gameData.imgChar,imgTitleBg:gameData.imgTitleBg,
         items:gameData.items,targets:gameData.targets
@@ -449,12 +448,11 @@ function applyConfig(){
 L=LANGS[CFG.lang]||LANGS.ru;
 document.body.style.fontFamily = CFG.titleFont;
 
-// ИСПРАВЛЕНИЕ ФОНА (отключение дублирования и точное масштабирование)
 const bg = document.getElementById('bgLayer');
 if(CFG.imgBg) {
-    bg.style.background = 'none'; // Сброс старых настроек
+    bg.style.background = 'none'; 
     bg.style.backgroundImage = 'url(' + CFG.imgBg + ')';
-    bg.style.backgroundSize = '100% 100%'; // Идеальное заполнение прямоугольника 16:9
+    bg.style.backgroundSize = '100% 100%'; 
     bg.style.backgroundPosition = 'center';
     bg.style.backgroundRepeat = 'no-repeat';
 } else {
@@ -462,12 +460,10 @@ if(CFG.imgBg) {
     bg.style.backgroundColor = '#06020c';
 }
 
-// Персонаж
 const char=document.getElementById('baseChar');
 if(CFG.imgChar){char.src=CFG.imgChar;char.style.display='block';char.style.opacity=CFG.opacity;}
 else char.style.display='none';
 
-// UI жизни/таймер
 const tb=document.getElementById('timerBox');
 tb.style.display=CFG.time>0?'block':'none';
 tb.style.border='2px solid '+CFG.timerColor;
@@ -479,7 +475,6 @@ lb.style.border='2px solid '+CFG.livesColor;
 lb.style.color=CFG.livesColor;
 lb.style.textShadow='0 0 10px '+CFG.livesColor;
 
-// Стиль плашки
 const mb=document.getElementById('modalBox');
 mb.style.background=CFG.modalBg;
 mb.style.border='2px solid '+CFG.modalGlow;
@@ -487,7 +482,6 @@ mb.style.boxShadow='0 0 40px '+CFG.modalGlow;
 document.getElementById('qTitle').style.color=CFG.modalGlow;
 document.getElementById('qTitle').innerText=L.q;
 
-// Титульный экран
 buildStartScreen();
 
 if(EDITOR){
@@ -604,8 +598,7 @@ const tol=area.width*0.12;
 if(dist<tol){
 triggerQuestion(img,idx,tx,ty,area);
 }else{
-img.classList.remove('dragging');
-img.classList.add('shake');
+img.classList.add('shake'); 
 setTimeout(()=>{img.classList.remove('shake');returnToTray(img);},400);
 }
 }
@@ -614,7 +607,6 @@ function returnToTray(img){
 img.classList.remove('dragging','placed');
 img.style.position='';img.style.left='';img.style.top='';img.style.width='';img.style.height='';
 document.getElementById('tray').appendChild(img);
-makeItemDraggable(img,parseInt(img.dataset.idx));
 }
 
 function triggerQuestion(img,idx,tx,ty,area){
@@ -680,7 +672,7 @@ img.style.position='absolute';
 img.style.left=(CFG.targets[idx].x)+'%';
 img.style.top=(CFG.targets[idx].y)+'%';
 img.style.transform='translate(-50%,-50%)';
-img.style.width='';img.style.height='15%';
+img.style.width='';img.style.height=(CFG.itemSize || 15)+'%';
 img.style.filter='drop-shadow(0 0 15px #00ff00)';
 img.style.pointerEvents='none';
 document.getElementById('playArea').appendChild(img);
@@ -743,17 +735,12 @@ function exportForGenially(){
     const cfg = collectConfig();
     let doc = buildGameDoc();
     
-    // Экранируем JSON для вставки
     const safeJson = JSON.stringify(cfg).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
     const inject = '<script>CFG=' + safeJson + ';EDITOR=false;applyConfig();</' + 'script>';
     doc = doc.replace('</body>', inject + '</body>');
 
-    // ИСПРАВЛЕНИЕ ДЛЯ GENIALLY:
-    // Мы используем надежный srcdoc, чтобы избежать ограничений на data-base64. 
-    // Заменяем кавычки на HTML-сущности для корректной вставки внутри атрибута.
     const escapedDoc = doc.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
     
-    // Оборачиваем в контейнер, который жестко держит формат 16:9 на слайде Genially
     const finalHtml = `<div style="width:100%; aspect-ratio:16/9; position:relative; overflow:hidden; border-radius:10px;"><iframe srcdoc="${escapedDoc}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allowfullscreen="true" allow="autoplay"></iframe></div>`;
 
     navigator.clipboard.writeText(finalHtml).then(() => {
