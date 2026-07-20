@@ -32,9 +32,10 @@ textarea{resize:vertical;min-height:110px;font-family:monospace;font-size:13px;l
 .file-btn input[type=file]{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer}
 input[type=range]{accent-color:var(--primary);width:100%}
 input[type=color]{width:100%;height:35px;border:none;border-radius:5px;background:transparent;cursor:pointer;padding:0}
-.preview-area{flex:1;padding:20px;background:#000;display:flex;flex-direction:column}
-.preview-header{color:var(--text-muted);font-family:var(--font-headers);margin-bottom:10px;font-size:14px}
-#game-preview{width:100%;height:100%;border:2px solid var(--primary-glow);border-radius:10px;background:var(--bg-main)}
+.preview-area{flex:1;padding:20px;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;}
+.preview-header{color:var(--text-muted);font-family:var(--font-headers);margin-bottom:10px;font-size:14px;width:100%;text-align:left;}
+.iframe-container {width:100%; max-height:calc(100% - 30px); aspect-ratio: 16 / 9; position: relative; border:2px solid var(--primary-glow); border-radius:10px; overflow:hidden;}
+#game-preview{position:absolute; top:0; left:0; width:100%; height:100%; border:none; background:var(--bg-main)}
 .items-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
 .item-thumb{width:60px;height:60px;background:rgba(0,0,0,.5);border:1px solid var(--secondary);border-radius:5px;display:flex;justify-content:center;align-items:center;position:relative;overflow:hidden}
 .item-thumb img{max-width:100%;max-height:100%;object-fit:contain}
@@ -170,7 +171,7 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 </div>
 
 <div class="section">
-<div class="section-title">Графика</div>
+<div class="section-title">Графика (Формат 16:9)</div>
 <div class="form-group" style="margin-bottom:10px"><div class="file-btn" id="lbl-bg">Фон игры (на весь экран)<input type="file" accept="image/*" onchange="processImg(this,'bg')"></div></div>
 <div class="form-group" style="margin-bottom:10px"><div class="file-btn" id="lbl-char">Персонаж (подсказка)<input type="file" accept="image/*" onchange="processImg(this,'char')"></div></div>
 <div class="form-group"><label>Прозрачность персонажа: <span id="op-val">40%</span></label><input type="range" id="cfg-opacity" min="10" max="100" value="40" oninput="document.getElementById('op-val').innerText=this.value+'%';pushUpdate()"></div>
@@ -197,7 +198,9 @@ input[type=color]{width:100%;height:35px;border:none;border-radius:5px;backgroun
 
 <div class="preview-area">
 <div class="preview-header">LIVE ПРЕДПРОСМОТР (перетащите зелёные маркеры для фиксации мест)</div>
-<iframe id="game-preview"></iframe>
+<div class="iframe-container">
+    <iframe id="game-preview"></iframe>
+</div>
 </div>
 </div>
 
@@ -236,17 +239,17 @@ function processImg(input,key){
         const img=new Image();
         img.onload=()=>{
             const canvas=document.createElement('canvas');
-            // Возвращаем высокое качество: Фон до 1200px, Персонаж до 600px
-            const MAX=(key==='bg'||key==='titleBg')? 1200 : 600;
+            // Уменьшено разрешение и качество для уверенной работы в Genially
+            const MAX=(key==='bg'||key==='titleBg')? 1000 : 500;
             let w=img.width,h=img.height;
             if(w>MAX){h*=MAX/w;w=MAX}
             canvas.width=w;canvas.height=h;
             canvas.getContext('2d').drawImage(img,0,0,w,h);
             
-            // Качество 0.8 (отличное визуальное качество при сносном весе)
-            if(key==='bg')gameData.imgBg=canvas.toDataURL('image/jpeg', 0.8);
-            if(key==='titleBg')gameData.imgTitleBg=canvas.toDataURL('image/jpeg', 0.8);
-            if(key==='char')gameData.imgChar=canvas.toDataURL('image/webp', 0.8);
+            // Качество 0.7 - отличный баланс веса и визуала
+            if(key==='bg')gameData.imgBg=canvas.toDataURL('image/jpeg', 0.7);
+            if(key==='titleBg')gameData.imgTitleBg=canvas.toDataURL('image/jpeg', 0.7);
+            if(key==='char')gameData.imgChar=canvas.toDataURL('image/webp', 0.7);
             
             label.innerHTML=`Загружено ✓<input type="file" accept="image/*" onchange="processImg(this,'${key}')">`;
             pushUpdate();
@@ -264,8 +267,8 @@ function addClothingItem(input){
         img.onload=()=>{
             const canvas=document.createElement('canvas');
             let w=img.width,h=img.height;
-            // Одежда до 300px (сохраняет детали)
-            if(w>300){h*=300/w;w=300}
+            // Одежда до 250px
+            if(w>250){h*=250/w;w=250}
             canvas.width=w;canvas.height=h;
             canvas.getContext('2d').drawImage(img,0,0,w,h);
             
@@ -338,7 +341,7 @@ window.addEventListener('message',e=>{
     if(e.data.type==='targetMoved'){gameData.targets[e.data.index]={x:e.data.x,y:e.data.y};}
 });
 
-function buildGameDoc(editorMode){
+function buildGameDoc(){
 return `<!DOCTYPE html><html><head><meta charset="UTF-8">
 <script>
 window.MathJax={tex:{inlineMath:[['$','$']]},svg:{fontCache:'global'}};
@@ -347,8 +350,8 @@ window.MathJax={tex:{inlineMath:[['$','$']]},svg:{fontCache:'global'}};
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&family=Roboto:wght@500;700&family=Montserrat:wght@700&family=Oswald:wght@700&family=Caveat:wght@700&family=Pacifico&display=swap');
 *, button, input { font-family: inherit; }
-body{margin:0;overflow:hidden;user-select:none;color:#fff;height:100vh;width:100vw;background:#000}
-#bgLayer{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0}
+body{margin:0;overflow:hidden;user-select:none;color:#fff;height:100vh;width:100vw;background:#000; position:relative;}
+#bgLayer{position:absolute;inset:0;z-index:0;background-size:100% 100%;background-position:center;background-repeat:no-repeat;}
 .top-ui{position:absolute;top:20px;width:100%;display:flex;justify-content:space-between;padding:0 30px;box-sizing:border-box;z-index:50;pointer-events:none}
 .ui-box{background:rgba(0,0,0,.7);border-radius:10px;padding:8px 18px;font-size:20px}
 .char{position:absolute;left:50%;top:42%;transform:translate(-50%,-42%);height:70%;object-fit:contain;pointer-events:none;z-index:1}
@@ -446,11 +449,18 @@ function applyConfig(){
 L=LANGS[CFG.lang]||LANGS.ru;
 document.body.style.fontFamily = CFG.titleFont;
 
-// Фон
-const bg=document.getElementById('bgLayer');
-bg.style.backgroundImage=CFG.imgBg?'url('+CFG.imgBg+')':'none';
-bg.style.background=CFG.imgBg?bg.style.background:'#06020c';
-if(CFG.imgBg)bg.style.backgroundImage='url('+CFG.imgBg+')';
+// ИСПРАВЛЕНИЕ ФОНА (отключение дублирования и точное масштабирование)
+const bg = document.getElementById('bgLayer');
+if(CFG.imgBg) {
+    bg.style.background = 'none'; // Сброс старых настроек
+    bg.style.backgroundImage = 'url(' + CFG.imgBg + ')';
+    bg.style.backgroundSize = '100% 100%'; // Идеальное заполнение прямоугольника 16:9
+    bg.style.backgroundPosition = 'center';
+    bg.style.backgroundRepeat = 'no-repeat';
+} else {
+    bg.style.backgroundImage = 'none';
+    bg.style.backgroundColor = '#06020c';
+}
 
 // Персонаж
 const char=document.getElementById('baseChar');
@@ -488,7 +498,6 @@ document.getElementById('playArea').style.display='none';
 document.getElementById('startScreen').style.display='none';
 document.getElementById('playArea').style.display='block';
 }
-// В редакторе ВСЕГДА показываем таймер и жизни для настройки
 document.getElementById('gameUI').style.display='flex';
 document.getElementById('livesTxt').innerText=CFG.lives>0?Array(CFG.lives).fill(CFG.lifeIcon).join(''):'';
 document.getElementById('timerTxt').innerText=CFG.time>0?CFG.time:'';
@@ -727,28 +736,26 @@ parent.postMessage({type:'ready'},'*');
 
 function initPreview(){
     const iframe=document.getElementById('game-preview');
-    iframe.srcdoc=buildGameDoc(true);
+    iframe.srcdoc=buildGameDoc();
 }
 
 function exportForGenially(){
     const cfg = collectConfig();
-    let doc = buildGameDoc(false);
+    let doc = buildGameDoc();
     
-    // 1. Безопасное экранирование тегов внутри JSON
+    // Экранируем JSON для вставки
     const safeJson = JSON.stringify(cfg).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
-    
-    // 2. Правильное закрытие тега script (разбито на 2 строки, чтобы не сломать парсер)
     const inject = '<script>CFG=' + safeJson + ';EDITOR=false;applyConfig();</' + 'script>';
     doc = doc.replace('</body>', inject + '</body>');
 
-    // 3. Кодируем ВЕСЬ документ в формат Base64 (поддерживает кириллицу)
-    // Это полностью избавит от проблем с кавычками и парсером Genially
-    const base64Doc = btoa(unescape(encodeURIComponent(doc)));
+    // ИСПРАВЛЕНИЕ ДЛЯ GENIALLY:
+    // Мы используем надежный srcdoc, чтобы избежать ограничений на data-base64. 
+    // Заменяем кавычки на HTML-сущности для корректной вставки внутри атрибута.
+    const escapedDoc = doc.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
     
-    // Формируем чистый iframe через src (а не srcdoc)
-    const finalHtml = `<iframe src="data:text/html;base64,${base64Doc}" style="width:100%; height:100%; min-height:500px; border:none; border-radius:10px;" allowfullscreen="true" allow="autoplay"></iframe>`;
+    // Оборачиваем в контейнер, который жестко держит формат 16:9 на слайде Genially
+    const finalHtml = `<div style="width:100%; aspect-ratio:16/9; position:relative; overflow:hidden; border-radius:10px;"><iframe srcdoc="${escapedDoc}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allowfullscreen="true" allow="autoplay"></iframe></div>`;
 
-    // Копируем итоговый код в буфер обмена
     navigator.clipboard.writeText(finalHtml).then(() => {
         const b = document.getElementById('copyBtn');
         b.innerText = 'СКОПИРОВАНО! ВСТАВЬТЕ В GENIALLY';
@@ -760,7 +767,7 @@ function exportForGenially(){
             b.style.background = 'var(--primary)';
         }, 4000);
     }).catch(err => {
-        alert('Размер игры слишком большой! Буфер обмена переполнен. Сделайте картинки меньше по весу.');
+        alert('Размер игры слишком большой! Сделайте картинки меньше по весу.');
     });
 }
 
