@@ -725,12 +725,6 @@ parent.postMessage({type:'ready'},'*');
 </${'script'}>
 </body></html>`;
 }
-
-function initPreview(){
-    const iframe=document.getElementById('game-preview');
-    iframe.srcdoc=buildGameDoc(true);
-}
-
 function exportForGenially(){
     const cfg = collectConfig();
     let doc = buildGameDoc(false);
@@ -739,32 +733,23 @@ function exportForGenially(){
     const inject = '<script>CFG='+JSON.stringify(cfg)+';EDITOR=false;applyConfig();<\\/script>';
     doc = doc.replace('</body>', inject + '</body>');
 
-    // 1. Безопасное кодирование всего HTML в Base64 (не ломает кириллицу)
-    const b64 = btoa(unescape(encodeURIComponent(doc)));
-    const uniqueId = 'frame-' + Math.random().toString(36).substring(2, 9);
+    // Безопасное экранирование HTML для атрибута srcdoc
+    const escapedHtml = doc
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
 
-    // 2. Метод Blob URL - создает виртуальный файл в браузере и дает на него ссылку
-    // Этот метод не блокируется песочницей Genially и поддерживает любой размер
+    // Используем атрибут srcdoc. 
+    // Он не требует выполнения JS в родительском окне и не блокируется Genially!
     const finalHtml = `
-<div style="width:100%; height:100%; min-height:500px; position:relative;">
-  <iframe id="${uniqueId}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; border-radius:10px; overflow:hidden;" allowfullscreen="true"></iframe>
-  <script>
-    (function(){
-      try {
-        var base64Data = "${b64}";
-        var decodedHtml = decodeURIComponent(escape(atob(base64Data)));
-        var blob = new Blob([decodedHtml], {type: 'text/html;charset=utf-8'});
-        var blobUrl = URL.createObjectURL(blob);
-        document.getElementById("${uniqueId}").src = blobUrl;
-      } catch(e) {
-        console.error("Game Load Error", e);
-      }
-    })();
-  <\/script>
+<div style="width:100%; height:100%; min-height:500px; position:relative; border-radius:10px; overflow:hidden;">
+  <iframe srcdoc="${escapedHtml}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allowfullscreen="true" allow="autoplay"></iframe>
 </div>
 `;
 
-    // 3. Копируем итоговый код в буфер обмена
+    // Копируем итоговый код в буфер обмена
     navigator.clipboard.writeText(finalHtml).then(() => {
         const b = document.getElementById('copyBtn');
         b.innerText = 'СКОПИРОВАНО! ВСТАВЬТЕ В GENIALLY';
@@ -776,7 +761,7 @@ function exportForGenially(){
             b.style.background = 'var(--primary)';
         }, 4000);
     }).catch(err => {
-        alert('Слишком много тяжелых картинок, буфер обмена переполнен!');
+        alert('Размер игры слишком большой! Буфер обмена переполнен. Сделайте картинки меньше по весу.');
     });
 }
 
