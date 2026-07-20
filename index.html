@@ -1,562 +1,602 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MysticMinds — Редактор игры «Одень персонажа»</title>
-<style>
-  :root{
-    --bg:#0e0f2a;
-    --panel:#1a1b3a;
-    --panel2:#22244d;
-    --cyan:#4dd0e1;
-    --purple:#a24bd8;
-    --text:#dfe3ff;
-    --glow:#7b5cff;
-    --font:'Georgia', serif;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;background:linear-gradient(160deg,#0b0c22,#161738);
-    color:var(--text);font-family:var(--font);min-height:100vh;
-  }
-  header{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:14px 24px;background:rgba(20,22,55,.8);
-    border-bottom:1px solid rgba(123,92,255,.3);
-    text-shadow:0 0 8px var(--glow);
-  }
-  header h1{font-size:22px;margin:0;letter-spacing:3px;color:#cfd6ff;}
-  .layout{display:flex;flex-wrap:wrap;gap:20px;padding:20px;}
-  .editor,.preview{
-    background:rgba(26,27,58,.7);border:1px solid rgba(123,92,255,.35);
-    border-radius:14px;padding:18px;box-shadow:0 0 20px rgba(123,92,255,.25);
-  }
-  .editor{flex:1 1 340px;max-width:420px;}
-  .preview{flex:2 1 480px;min-width:320px;}
-  h2{color:var(--cyan);letter-spacing:2px;font-size:16px;text-shadow:0 0 6px var(--cyan);border-bottom:1px solid rgba(77,208,225,.3);padding-bottom:6px;}
-  label{display:block;margin:10px 0 4px;font-size:13px;color:#b9c0ff;}
-  input,select,textarea,button{
-    width:100%;padding:8px;border-radius:8px;border:1px solid rgba(123,92,255,.4);
-    background:rgba(14,15,42,.8);color:var(--text);font-family:var(--font);
-  }
-  input[type=color]{padding:2px;height:36px;}
-  input[type=range]{padding:0;}
-  button{
-    cursor:pointer;background:linear-gradient(90deg,var(--purple),var(--cyan));
-    color:#fff;border:none;font-weight:bold;letter-spacing:1px;
-    text-shadow:0 0 4px #000;transition:.2s;margin-top:10px;
-    box-shadow:0 0 10px var(--glow);
-  }
-  button:hover{filter:brightness(1.2);box-shadow:0 0 18px var(--glow);}
-  .row{display:flex;gap:8px;}
-  .row>*{flex:1;}
-  fieldset{border:1px solid rgba(123,92,255,.3);border-radius:10px;margin-top:14px;}
-  legend{color:var(--cyan);padding:0 6px;font-size:13px;}
-  .clothItem{background:rgba(34,36,77,.7);border:1px solid rgba(123,92,255,.3);border-radius:8px;padding:8px;margin-top:8px;}
-  .clothItem small{color:#8a90d0;}
-  .gameStage{
-    position:relative;width:100%;height:560px;border-radius:12px;overflow:hidden;
-    background-position:center;background-size:cover;border:1px solid rgba(123,92,255,.3);
-  }
-  .drop-zone{
-    position:absolute;border:2px dashed var(--cyan);border-radius:8px;
-    box-shadow:0 0 10px var(--cyan);opacity:.8;
-    display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;
-  }
-  .cloth-drag{position:absolute;cursor:grab;touch-action:none;user-select:none;filter:drop-shadow(0 0 6px var(--glow));}
-  .taskModal,.winModal,.loseModal{
-    position:absolute;inset:0;background:rgba(6,7,25,.85);display:none;
-    align-items:center;justify-content:center;flex-direction:column;z-index:50;text-align:center;padding:20px;
-  }
-  .modalBox{
-    background:var(--panel);border:1px solid var(--cyan);border-radius:14px;
-    padding:24px;max-width:80%;box-shadow:0 0 25px var(--glow);
-  }
-  .ansBtn{margin:6px 0;}
-  .tray{
-    position:absolute;bottom:0;left:0;right:0;display:flex;gap:10px;flex-wrap:wrap;
-    padding:8px;background:rgba(10,11,34,.7);justify-content:center;min-height:70px;align-items:center;
-  }
-  .tray img{height:56px;cursor:grab;filter:drop-shadow(0 0 6px var(--glow));}
-  footer{text-align:center;padding:16px;font-size:12px;color:#8a90d0;border-top:1px solid rgba(123,92,255,.3);margin-top:20px;}
-  .copied{background:linear-gradient(90deg,#2ecc71,#27ae60)!important;}
-  .thumb{max-height:50px;border-radius:6px;margin-top:4px;}
-  .tabs{display:flex;gap:6px;margin-bottom:10px;}
-  .tabs button{margin-top:0;font-size:12px;padding:6px;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduGame Builder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #06020c;
+            --bg-panel: #110920;
+            --bg-input: #1a1033;
+            --primary: #00f0ff;
+            --primary-glow: rgba(0, 240, 255, 0.4);
+            --secondary: #a626ff;
+            --text-main: #ffffff;
+            --text-muted: #8e87a5;
+            --font-headers: 'Orbitron', sans-serif;
+            --font-text: 'Rajdhani', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: var(--font-text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--primary-glow);
+            background: linear-gradient(180deg, rgba(0,240,255,0.1) 0%, transparent 100%);
+        }
+        
+        .logo { font-family: var(--font-headers); font-size: 22px; font-weight: 700; text-shadow: 0 0 10px var(--primary); }
+        .logo span { color: var(--secondary); text-shadow: 0 0 10px var(--secondary); }
+
+        .btn { 
+            padding: 10px 25px; border: none; border-radius: 5px; font-family: var(--font-headers); font-weight: 700; 
+            font-size: 14px; cursor: pointer; text-transform: uppercase; transition: 0.2s; 
+        }
+        .btn-glow { 
+            background: var(--primary); color: #000; box-shadow: 0 0 15px var(--primary-glow); 
+        }
+        .btn-glow:hover { box-shadow: 0 0 25px var(--primary); transform: scale(1.02); }
+
+        .workspace { display: flex; flex: 1; height: calc(100vh - 65px); }
+
+        /* Левая панель настроек */
+        .sidebar {
+            width: 450px;
+            background: var(--bg-panel);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--secondary); border-radius: 3px; }
+
+        .section { background: rgba(0,0,0,0.3); border: 1px solid var(--primary-glow); border-radius: 10px; padding: 15px; margin-bottom: 20px; }
+        .section-title { font-family: var(--font-headers); font-size: 16px; margin-bottom: 15px; color: var(--primary); display: flex; align-items: center; gap: 10px;}
+        .section-title::before { content: '>'; color: var(--secondary); }
+
+        .form-row { display: flex; gap: 10px; margin-bottom: 12px; }
+        .form-group { flex: 1; display: flex; flex-direction: column; }
+        .form-group label { font-size: 13px; color: var(--text-muted); margin-bottom: 5px; }
+        
+        input[type="text"], input[type="number"], textarea, select {
+            width: 100%; padding: 10px; background: var(--bg-input); border: 1px solid rgba(255,255,255,0.1); 
+            color: white; border-radius: 5px; font-family: var(--font-text); font-size: 15px; outline: none;
+        }
+        input:focus, textarea:focus { border-color: var(--primary); }
+        
+        textarea { resize: vertical; min-height: 120px; font-family: monospace; font-size: 13px; line-height: 1.5; }
+        
+        .hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; font-style: italic; }
+
+        .file-btn { display: block; width: 100%; padding: 10px; text-align: center; background: rgba(166, 38, 255, 0.1); border: 1px dashed var(--secondary); border-radius: 5px; color: var(--secondary); cursor: pointer; position: relative; }
+        .file-btn input[type="file"] { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+        input[type="range"] { accent-color: var(--primary); width: 100%; }
+
+        /* Правая панель предпросмотра */
+        .preview-area {
+            flex: 1;
+            padding: 20px;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .preview-header { color: var(--text-muted); font-family: var(--font-headers); margin-bottom: 10px; display: flex; justify-content: space-between;}
+        
+        #game-preview { 
+            width: 100%; height: 100%; border: 2px solid var(--primary-glow); 
+            border-radius: 10px; background: var(--bg-main); box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        }
+
+        .items-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .item-thumb { width: 60px; height: 60px; background: rgba(0,0,0,0.5); border: 1px solid var(--secondary); border-radius: 5px; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+        .item-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .item-thumb .del-btn { position: absolute; top:0; right:0; background: red; color: white; border: none; width: 20px; height: 20px; cursor: pointer; font-size: 10px; }
+    </style>
 </head>
 <body>
 
-<header>
-  <h1>✦ MYSTICMINDS ✦ Редактор игры</h1>
-  <div style="font-size:13px;color:var(--cyan)">«Одень персонажа»</div>
-</header>
+    <header>
+        <div class="logo">EDU<span>GAME</span></div>
+        <button class="btn btn-glow" id="copyBtn" onclick="exportForGenially()">Скопировать код для Genially</button>
+    </header>
 
-<div class="layout">
+    <div class="workspace">
+        <!-- ЛЕВАЯ ПАНЕЛЬ -->
+        <div class="sidebar">
+            
+            <div class="section">
+                <div class="section-title">Тексты и настройки</div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <input type="text" id="cfg-title" value="Математическая Одежда" placeholder="Название игры" oninput="debounceUpdate()">
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <input type="text" id="cfg-desc" value="Одень персонажа, решая задачи!" placeholder="Описание" oninput="debounceUpdate()">
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Кнопка старта</label><input type="text" id="cfg-btnPlay" value="ИГРАТЬ" oninput="debounceUpdate()"></div>
+                    <div class="form-group"><label>Текст победы</label><input type="text" id="cfg-txtWin" value="ОТЛИЧНАЯ РАБОТА!" oninput="debounceUpdate()"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Жизни (0 - бесконечно)</label><input type="number" id="cfg-lives" value="3" min="0" oninput="debounceUpdate()"></div>
+                    <div class="form-group"><label>Таймер (сек, 0 - выкл)</label><input type="number" id="cfg-time" value="60" min="0" oninput="debounceUpdate()"></div>
+                </div>
+            </div>
 
-  <!-- ============ ПАНЕЛЬ РЕДАКТОРА ============ -->
-  <div class="editor">
-    <h2>НАСТРОЙКИ ИГРЫ</h2>
+            <div class="section">
+                <div class="section-title">Графика</div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <div class="file-btn" id="lbl-bg">1. Фон игры (на весь экран)<input type="file" accept="image/*" onchange="processImg(this, 'bg')"></div>
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <div class="file-btn" id="lbl-char">2. Персонаж в одежде (Подсказка)<input type="file" accept="image/*" onchange="processImg(this, 'char')"></div>
+                </div>
+                <div class="form-group">
+                    <label>Прозрачность персонажа: <span id="op-val">40%</span></label>
+                    <input type="range" id="cfg-opacity" min="10" max="100" value="40" oninput="document.getElementById('op-val').innerText = this.value+'%'; debounceUpdate()">
+                </div>
+            </div>
 
-    <label>Заголовок игры</label>
-    <input id="gameTitle" value="Одень персонажа" oninput="render()">
+            <div class="section">
+                <div class="section-title">Вопросы (MathJax $)</div>
+                <textarea id="cfg-questions" oninput="debounceUpdate()">Сколько будет 2+2? | 4 | 5 | 6
+Вычислите $\frac{10}{2}$: | 5
+Что такое $x$, если $x+2=4$? | 2 | 4 | -2
+Столица Франции? | Париж | Лондон | Рим</textarea>
+                <div class="hint">
+                    Формат для выбора: Вопрос | Прав.Ответ | Неверный 1 | Неверный 2<br>
+                    Формат ввода текста: Вопрос | Прав.Ответ
+                </div>
+            </div>
 
-    <label>Язык интерфейса игры</label>
-    <select id="lang" onchange="render()">
-      <option value="ru">Русский</option>
-      <option value="en">English</option>
-      <option value="uk">Українська</option>
-      <option value="de">Deutsch</option>
-      <option value="fr">Français</option>
-    </select>
+            <div class="section">
+                <div class="section-title">Элементы одежды (PNG без фона)</div>
+                <div class="file-btn">Добавить элемент одежды<input type="file" accept="image/png, image/webp" onchange="addClothingItem(this)"></div>
+                <div class="items-grid" id="items-container"></div>
+                <div class="hint">Ученик будет перетаскивать эти элементы на персонажа. При перетаскивании появится случайный вопрос из списка выше.</div>
+            </div>
+            
+            <div style="text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 20px;">
+                © Гальмиз Мария Александровна
+            </div>
+        </div>
 
-    <fieldset>
-      <legend>Изображения</legend>
-      <label>Персонаж (в полный рост, одетый)</label>
-      <input type="file" accept="image/*" onchange="loadImg(this,'character')">
-      <img id="thumb_character" class="thumb">
-
-      <label>Картинка ПОБЕДЫ</label>
-      <input type="file" accept="image/*" onchange="loadImg(this,'win')">
-      <img id="thumb_win" class="thumb">
-
-      <label>Картинка ПОРАЖЕНИЯ</label>
-      <input type="file" accept="image/*" onchange="loadImg(this,'lose')">
-      <img id="thumb_lose" class="thumb">
-
-      <label>Фон игры (необязательно)</label>
-      <input type="file" accept="image/*" onchange="loadImg(this,'bg')">
-      <img id="thumb_bg" class="thumb">
-    </fieldset>
-
-    <fieldset>
-      <legend>Стиль</legend>
-      <div class="row">
-        <div><label>Фон</label><input type="color" id="c_bg" value="#0e0f2a" oninput="render()"></div>
-        <div><label>Окно задания</label><input type="color" id="c_modal" value="#1a1b3a" oninput="render()"></div>
-      </div>
-      <div class="row">
-        <div><label>Плашки ответов</label><input type="color" id="c_ans" value="#22244d" oninput="render()"></div>
-        <div><label>Свечение кнопок</label><input type="color" id="c_glow" value="#7b5cff" oninput="render()"></div>
-      </div>
-      <div class="row">
-        <div><label>Бирюзовый акцент</label><input type="color" id="c_cyan" value="#4dd0e1" oninput="render()"></div>
-        <div><label>Фиолетовый акцент</label><input type="color" id="c_purple" value="#a24bd8" oninput="render()"></div>
-      </div>
-      <label>Шрифт</label>
-      <select id="font" onchange="render()">
-        <option value="Georgia, serif">Georgia</option>
-        <option value="Arial, sans-serif">Arial</option>
-        <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-        <option value="'Courier New', monospace">Courier</option>
-        <option value="Verdana, sans-serif">Verdana</option>
-      </select>
-      <label>Размер шрифта: <span id="fsVal">16</span>px</label>
-      <input type="range" id="fontSize" min="12" max="26" value="16" oninput="fsVal.textContent=this.value;render()">
-    </fieldset>
-
-    <fieldset>
-      <legend>Элементы одежды и задания</legend>
-      <div id="clothList"></div>
-      <button onclick="addCloth()">+ Добавить элемент одежды</button>
-    </fieldset>
-
-    <div class="tabs">
-      <button onclick="openTest()">▶ ТЕСТ-ДРАЙВ</button>
-      <button id="copyBtn" onclick="copyCode()">📋 Скопировать код</button>
+        <!-- ПРАВАЯ ПАНЕЛЬ -->
+        <div class="preview-area">
+            <div class="preview-header">
+                <span>LIVE ПРЕДПРОСМОТР (ТЕСТ-ДРАЙВ)</span>
+            </div>
+            <iframe id="game-preview"></iframe>
+        </div>
     </div>
-  </div>
 
-  <!-- ============ ПРЕДПРОСМОТР ============ -->
-  <div class="preview">
-    <h2>ПРЕДПРОСМОТР (обновляется мгновенно)</h2>
-    <iframe id="previewFrame" style="width:100%;height:620px;border:none;border-radius:12px;"></iframe>
-  </div>
+    <script>
+        let gameData = {
+            imgBg: '',
+            imgChar: '',
+            items: []
+        };
+        
+        let updateTimeout;
 
-</div>
+        // Сжатие картинок
+        function processImg(input, key) {
+            const file = input.files[0];
+            if (!file) return;
+            const label = input.parentElement;
+            label.innerText = "Загрузка...";
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = key === 'bg' ? 1000 : 400; // Жмем сильнее для Genially
+                    let width = img.width, height = img.height;
+                    
+                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    canvas.width = width; canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    
+                    if(key === 'bg') gameData.imgBg = canvas.toDataURL('image/jpeg', 0.6);
+                    if(key === 'char') gameData.imgChar = canvas.toDataURL('image/webp', 0.8);
+                    
+                    label.innerHTML = `Загружено ✓ <input type="file" accept="image/*" onchange="processImg(this, '${key}')">`;
+                    label.style.borderColor = "#00f0ff"; label.style.color = "#00f0ff";
+                    updatePreview();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
 
-<footer>
-  Все права защищены и принадлежат Гальмиз Марии Александровне
-</footer>
+        // Добавление одежды
+        function addClothingItem(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    if(w > 250) { h *= 250/w; w = 250; }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    
+                    gameData.items.push(canvas.toDataURL('image/webp', 0.8));
+                    renderItemsList();
+                    updatePreview();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            input.value = '';
+        }
 
-<script>
-/* ===================== ДАННЫЕ ===================== */
-let clothes = []; // {id,name,img,zoneX,zoneY,zoneW,zoneH,startX,startY,taskType,question,answers[],correct,taskImg}
-let images = {character:'',win:'',lose:'',bg:''};
+        function renderItemsList() {
+            const cont = document.getElementById('items-container');
+            cont.innerHTML = '';
+            gameData.items.forEach((base64, idx) => {
+                cont.innerHTML += `<div class="item-thumb"><img src="${base64}"><button class="del-btn" onclick="gameData.items.splice(${idx},1); renderItemsList(); updatePreview()">X</button></div>`;
+            });
+        }
 
-const T = {
-  ru:{drag:"Перетащи одежду на место",correct:"Верно!",wrong:"Неверно, попробуй ещё",submit:"Ответить",win:"ПОБЕДА! Персонаж одет верно!",lose:"Попробуй ещё раз",restart:"Играть заново",place:"Место"},
-  en:{drag:"Drag clothes to the right spot",correct:"Correct!",wrong:"Wrong, try again",submit:"Submit",win:"WIN! Character dressed correctly!",lose:"Try again",restart:"Play again",place:"Spot"},
-  uk:{drag:"Перетягни одяг на місце",correct:"Правильно!",wrong:"Неправильно, спробуй ще",submit:"Відповісти",win:"ПЕРЕМОГА!",lose:"Спробуй ще",restart:"Грати знову",place:"Місце"},
-  de:{drag:"Ziehe die Kleidung an ihren Platz",correct:"Richtig!",wrong:"Falsch, versuche es erneut",submit:"Antworten",win:"SIEG!",lose:"Nochmal",restart:"Nochmal spielen",place:"Platz"},
-  fr:{drag:"Glissez les vêtements au bon endroit",correct:"Correct!",wrong:"Faux, réessayez",submit:"Répondre",win:"VICTOIRE!",lose:"Réessayer",restart:"Rejouer",place:"Zone"}
-};
+        // Задержка обновления чтоб не лагало при вводе текста
+        function debounceUpdate() {
+            clearTimeout(updateTimeout);
+            updateTimeout = setTimeout(updatePreview, 500);
+        }
 
-/* ============= СЖАТИЕ КАРТИНОК ============= */
-function loadImg(input,key){
-  const file=input.files[0]; if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const img=new Image();
-    img.onload=()=>{
-      const canvas=document.createElement('canvas');
-      let w=img.width,h=img.height, max=600;
-      if(w>max){h=h*max/w;w=max;}
-      if(h>max){w=w*max/h;h=max;}
-      canvas.width=w;canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      const data=canvas.toDataURL('image/webp',0.7);
-      images[key]=data;
-      document.getElementById('thumb_'+key).src=data;
-      render();
-    };
-    img.src=e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
+        // ГЕНЕРАТОР КОДА ИГРЫ
+        function getGameHTML() {
+            const title = document.getElementById('cfg-title').value;
+            const desc = document.getElementById('cfg-desc').value;
+            const btnPlay = document.getElementById('cfg-btnPlay').value;
+            const txtWin = document.getElementById('cfg-txtWin').value;
+            const lives = document.getElementById('cfg-lives').value;
+            const time = document.getElementById('cfg-time').value;
+            const opacity = document.getElementById('cfg-opacity').value / 100;
+            
+            // Парсинг вопросов
+            const rawQ = document.getElementById('cfg-questions').value.split('\n');
+            let parsedQuestions = [];
+            rawQ.forEach(line => {
+                if(line.trim() !== '') {
+                    const parts = line.split('|').map(s => s.trim());
+                    if(parts.length >= 2) parsedQuestions.push(parts);
+                }
+            });
 
-/* ============= КАРТИНКА ДЛЯ ЭЛЕМЕНТА ОДЕЖДЫ ============= */
-function loadClothImg(input,id,field){
-  const file=input.files[0]; if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const img=new Image();
-    img.onload=()=>{
-      const canvas=document.createElement('canvas');
-      let w=img.width,h=img.height,max=300;
-      if(w>max){h=h*max/w;w=max;}
-      if(h>max){w=w*max/h;h=max;}
-      canvas.width=w;canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      const c=clothes.find(x=>x.id===id);
-      c[field]=canvas.toDataURL('image/webp',0.7);
-      render();
-    };
-    img.src=e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
+            // Формируем HTML одежды
+            let htmlItems = '';
+            gameData.items.forEach((item, i) => {
+                // Располагаем вещи внизу экрана по горизонтали
+                htmlItems += `<img src="${item}" class="item" id="item-${i}" style="left:${10 + (i * 15)}%; top:80%;">`;
+            });
 
-/* ============= ДОБАВИТЬ ОДЕЖДУ ============= */
-function addCloth(){
-  const id=Date.now()+Math.floor(Math.random()*1000);
-  clothes.push({id,name:'Элемент',img:'',zoneX:40,zoneY:20,zoneW:20,zoneH:20,
-    taskType:'choice',question:'Вопрос?',answers:['Ответ 1','Ответ 2'],correct:0,taskImg:''});
-  drawClothList();render();
-}
-function delCloth(id){clothes=clothes.filter(c=>c.id!==id);drawClothList();render();}
+            return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"><\/script>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap');
+                    body { margin:0; padding:0; background:#000 url('${gameData.imgBg}') no-repeat center center; background-size:cover; font-family:'Rajdhani', sans-serif; overflow:hidden; user-select:none; color:white; height:100vh; width:100vw; }
+                    
+                    /* UI */
+                    .top-ui { position:absolute; top:20px; width:100%; display:flex; justify-content:space-between; padding:0 30px; box-sizing:border-box; z-index:50; pointer-events:none; }
+                    .ui-box { background:rgba(0,0,0,0.7); border:2px solid #00f0ff; border-radius:10px; padding:10px 20px; font-family:'Orbitron', sans-serif; font-size:20px; color:#00f0ff; text-shadow:0 0 10px #00f0ff; }
+                    
+                    /* Game Area */
+                    .char { position:absolute; left:50%; top:45%; transform:translate(-50%, -45%); height:75%; max-height:800px; object-fit:contain; opacity:${opacity}; pointer-events:none; z-index:1; }
+                    .item { position:absolute; height:15%; object-fit:contain; cursor:grab; z-index:10; filter:drop-shadow(0 0 10px #a626ff); transition: transform 0.1s; touch-action: none; }
+                    .item:active { cursor:grabbing; transform:scale(1.1); z-index:100 !important; }
+                    
+                    /* Screens */
+                    .screen { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(10,5,24,0.95); z-index:200; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px; box-sizing:border-box; backdrop-filter:blur(5px); }
+                    .screen h1 { font-family:'Orbitron'; font-size:40px; color:#00f0ff; text-shadow:0 0 20px #00f0ff; margin-bottom:10px; }
+                    .screen p { font-size:22px; max-width:600px; margin-bottom:30px; }
+                    .btn { background: linear-gradient(90deg, #a626ff, #d845ff); border:none; padding:15px 40px; border-radius:30px; font-family:'Orbitron'; font-weight:700; font-size:20px; color:white; cursor:pointer; box-shadow:0 0 20px rgba(166,38,255,0.6); text-transform:uppercase; transition:0.2s;}
+                    .btn:hover { transform:scale(1.05); box-shadow:0 0 30px #00f0ff; }
+                    
+                    /* Modal Question */
+                    .modal-overlay { display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:150; justify-content:center; align-items:center; }
+                    .modal { background:#110920; border:2px solid #a626ff; box-shadow:0 0 40px rgba(166,38,255,0.5); padding:30px; border-radius:15px; width:90%; max-width:500px; text-align:center; }
+                    .modal h2 { color:#00f0ff; margin-top:0; font-family:'Orbitron'; font-size:24px; }
+                    .q-text { font-size:22px; margin-bottom:20px; }
+                    
+                    .ans-grid { display:flex; flex-direction:column; gap:10px; }
+                    .ans-btn { background:rgba(255,255,255,0.1); border:1px solid #00f0ff; padding:12px; color:white; font-size:18px; cursor:pointer; border-radius:8px; font-family:'Rajdhani'; transition:0.2s; }
+                    .ans-btn:hover { background:rgba(0,240,255,0.2); }
+                    .text-input { width:100%; padding:12px; font-size:18px; border-radius:8px; border:1px solid #00f0ff; background:#000; color:white; box-sizing:border-box; margin-bottom:10px;text-align:center;}
+                    
+                    #wrongMsg { color:#ff3366; font-weight:bold; margin-top:15px; display:none; text-shadow: 0 0 10px red; }
+                </style>
+            </head>
+            <body>
+                <!-- Screens -->
+                <div class="screen" id="startScreen">
+                    <h1>${title}</h1>
+                    <p>${desc}</p>
+                    <button class="btn" onclick="startGame()">${btnPlay}</button>
+                </div>
+                
+                <div class="screen" id="endScreen" style="display:none;">
+                    <h1 id="endTitle"></h1>
+                    <button class="btn" onclick="location.reload()">НАЧАТЬ ЗАНОВО</button>
+                </div>
 
-function drawClothList(){
-  const box=document.getElementById('clothList');box.innerHTML='';
-  clothes.forEach((c,i)=>{
-    const d=document.createElement('div');d.className='clothItem';
-    d.innerHTML=`
-      <div class="row"><b>#${i+1}</b><button style="margin:0;background:#c0392b;box-shadow:none" onclick="delCloth(${c.id})">✕</button></div>
-      <label>Название</label><input value="${c.name}" oninput="upd(${c.id},'name',this.value)">
-      <label>Картинка элемента одежды</label>
-      <input type="file" accept="image/*" onchange="loadClothImg(this,${c.id},'img')">
-      ${c.img?`<img src="${c.img}" class="thumb">`:''}
-      <small>Позиция зоны (% от размера): X, Y, ширина, высота</small>
-      <div class="row">
-        <input type="number" value="${c.zoneX}" oninput="upd(${c.id},'zoneX',+this.value)" title="X">
-        <input type="number" value="${c.zoneY}" oninput="upd(${c.id},'zoneY',+this.value)" title="Y">
-        <input type="number" value="${c.zoneW}" oninput="upd(${c.id},'zoneW',+this.value)" title="W">
-        <input type="number" value="${c.zoneH}" oninput="upd(${c.id},'zoneH',+this.value)" title="H">
-      </div>
-      <label>Тип задания</label>
-      <select onchange="upd(${c.id},'taskType',this.value)">
-        <option value="choice" ${c.taskType=='choice'?'selected':''}>Выбор ответа</option>
-        <option value="input" ${c.taskType=='input'?'selected':''}>Ввод ответа</option>
-        <option value="imginput" ${c.taskType=='imginput'?'selected':''}>Картинка + ввод ответа</option>
-      </select>
-      <label>Вопрос</label><textarea oninput="upd(${c.id},'question',this.value)">${c.question}</textarea>
-      ${c.taskType=='imginput'?`<label>Картинка к заданию</label>
-        <input type="file" accept="image/*" onchange="loadClothImg(this,${c.id},'taskImg')">
-        ${c.taskImg?`<img src="${c.taskImg}" class="thumb">`:''}`:''}
-      ${c.taskType=='choice'?renderAnswers(c):
-        `<label>Правильный ответ (текст)</label><input value="${c.answers[0]||''}" oninput="updAns(${c.id},0,this.value)">`}
-    `;
-    box.appendChild(d);
-  });
-}
-function renderAnswers(c){
-  let h='<label>Варианты (выбери правильный)</label>';
-  c.answers.forEach((a,i)=>{
-    h+=`<div class="row" style="align-items:center">
-      <input type="radio" style="width:auto" ${c.correct==i?'checked':''} onclick="upd(${c.id},'correct',${i})">
-      <input value="${a}" oninput="updAns(${c.id},${i},this.value)">
-    </div>`;
-  });
-  h+=`<button style="font-size:11px;padding:4px" onclick="addAns(${c.id})">+ вариант</button>`;
-  return h;
-}
-function upd(id,f,v){clothes.find(c=>c.id===id)[f]=v;drawClothList();render();}
-function updAns(id,i,v){clothes.find(c=>c.id===id).answers[i]=v;render();}
-function addAns(id){clothes.find(c=>c.id===id).answers.push('Ответ');drawClothList();render();}
+                <!-- Game UI -->
+                <div class="top-ui" id="gameUI" style="display:none;">
+                    ${time > 0 ? `<div class="ui-box">⏱ <span id="timerTxt">${time}</span></div>` : '<div></div>'}
+                    ${lives > 0 ? `<div class="ui-box">❤ <span id="livesTxt">${lives}</span></div>` : '<div></div>'}
+                </div>
 
-/* ============= ГЕНЕРАЦИЯ КОДА ИГРЫ ============= */
-function buildGameHTML(){
-  const g={
-    title:document.getElementById('gameTitle').value,
-    lang:document.getElementById('lang').value,
-    cBg:document.getElementById('c_bg').value,
-    cModal:document.getElementById('c_modal').value,
-    cAns:document.getElementById('c_ans').value,
-    cGlow:document.getElementById('c_glow').value,
-    cCyan:document.getElementById('c_cyan').value,
-    cPurple:document.getElementById('c_purple').value,
-    font:document.getElementById('font').value,
-    fontSize:document.getElementById('fontSize').value
-  };
-  const data=JSON.stringify({g,images,clothes});
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
-*{box-sizing:border-box;}
-body{margin:0;font-family:${g.font};font-size:${g.fontSize}px;overflow:hidden;}
-#stage{position:relative;width:100vw;height:100vh;background:${g.cBg};background-size:cover;background-position:center;}
-#char{position:absolute;top:0;left:50%;transform:translateX(-50%);height:100%;filter:drop-shadow(0 0 15px ${g.cGlow});}
-.zone{position:absolute;border:2px dashed ${g.cCyan};border-radius:8px;box-shadow:0 0 10px ${g.cCyan};display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;pointer-events:none;}
-.zone.filled{border-color:${g.cPurple};}
-.cloth{position:absolute;cursor:grab;touch-action:none;filter:drop-shadow(0 0 8px ${g.cGlow});transition:box-shadow .2s;}
-#tray{position:absolute;bottom:0;left:0;right:0;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;padding:10px;background:rgba(0,0,0,.4);min-height:80px;align-items:center;}
-#tray img{height:60px;cursor:grab;filter:drop-shadow(0 0 8px ${g.cGlow});}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:100;}
-.box{background:${g.cModal};border:1px solid ${g.cCyan};border-radius:14px;padding:26px;max-width:82%;text-align:center;color:#fff;box-shadow:0 0 30px ${g.cGlow};}
-.box img{max-width:100%;max-height:220px;border-radius:8px;margin-bottom:10px;}
-.ans{display:block;width:100%;margin:6px 0;padding:10px;border:none;border-radius:8px;background:${g.cAns};color:#fff;cursor:pointer;font-family:${g.font};box-shadow:0 0 8px ${g.cGlow};}
-.ans:hover{filter:brightness(1.25);}
-input.txt{padding:10px;border-radius:8px;border:1px solid ${g.cCyan};background:rgba(0,0,0,.4);color:#fff;width:80%;font-family:${g.font};}
-.btn{margin-top:12px;padding:10px 20px;border:none;border-radius:8px;background:linear-gradient(90deg,${g.cPurple},${g.cCyan});color:#fff;cursor:pointer;font-weight:bold;box-shadow:0 0 12px ${g.cGlow};font-family:${g.font};}
-h2{color:${g.cCyan};text-shadow:0 0 8px ${g.cCyan};letter-spacing:2px;}
-#title{position:absolute;top:8px;width:100%;text-align:center;color:#fff;text-shadow:0 0 10px ${g.cGlow};letter-spacing:3px;font-size:1.4em;z-index:5;}
-.msg{margin-top:8px;font-weight:bold;}
-</style></head><body>
-<div id="stage"><div id="title">${g.title}</div></div>
-<div class="modal" id="taskModal"><div class="box" id="taskBox"></div></div>
-<div class="modal" id="endModal"><div class="box" id="endBox"></div></div>
-<script>
-var DATA=${data};
-var T=${JSON.stringify(T)};
-var lang=DATA.g.lang, tr=T[lang];
-var stage=document.getElementById('stage');
-var solved={}; // id -> true, зона доступна для сброса
-var currentCloth=null;
+                <!-- Play Area -->
+                <div id="playArea" style="display:none; width:100%; height:100%; position:absolute; top:0;left:0;">
+                    ${gameData.imgChar ? `<img src="${gameData.imgChar}" class="char" id="baseChar">` : ''}
+                    ${htmlItems}
+                </div>
 
-function initGame(){
-  stage.style.background=DATA.images.bg?('url('+DATA.images.bg+') center/cover':'')+DATA.g.cBg;
-  stage.innerHTML='<div id="title">'+DATA.g.title+'</div>';
-  solved={};
-  // персонаж
-  if(DATA.images.character){var ch=document.createElement('img');ch.id='char';ch.src=DATA.images.character;stage.appendChild(ch);}
-  // зоны
-  DATA.clothes  // зоны (пунктирные линии)
-  DATA.clothes.forEach(function(c){
-    var z=document.createElement('div');
-    z.className='zone';z.id='zone_'+c.id;
-    z.style.left=c.zoneX+'%';z.style.top=c.zoneY+'%';
-    z.style.width=c.zoneW+'%';z.style.height=c.zoneH+'%';
-    z.textContent=tr.place;
-    stage.appendChild(z);
-  });
-  // трей с одеждой (перемешан)
-  var tray=document.createElement('div');tray.id='tray';
-  var shuffled=DATA.clothes.slice().sort(function(){return Math.random()-0.5;});
-  shuffled.forEach(function(c){
-    if(!c.img)return;
-    var im=document.createElement('img');
-    im.src=c.img;im.dataset.id=c.id;
-    makeDraggable(im,c);
-    tray.appendChild(im);
-  });
-  stage.appendChild(tray);
-  // добавляем кнопку рестарта
-  var rb=document.createElement('button');
-  rb.className='btn';rb.textContent=tr.restart;
-  rb.style.position='absolute';rb.style.top='10px';rb.style.right='10px';rb.style.zIndex=6;
-  rb.onclick=initGame;
-  stage.appendChild(rb);
-}
+                <!-- Question Modal -->
+                <div class="modal-overlay" id="qModal">
+                    <div class="modal">
+                        <h2>ВОПРОС</h2>
+                        <div class="q-text" id="qText"></div>
+                        <div class="ans-grid" id="ansContainer"></div>
+                        <div id="wrongMsg">НЕВЕРНО! ПОПРОБУЙ ЕЩЕ РАЗ.</div>
+                    </div>
+                </div>
 
-/* ==== ПЕРЕТАСКИВАНИЕ ==== */
-function makeDraggable(el,cloth){
-  var offX,offY,moving=false;
-  function start(x,y){
-    // при взятии одежды — показать задание (только если ещё не решено)
-    if(!solved[cloth.id]){
-      showTask(cloth);
-      return;
-    }
-    moving=true;el.style.cursor='grabbing';
-    var r=el.getBoundingClientRect();
-    offX=x-r.left;offY=y-r.top;
-    el.style.position='fixed';el.style.zIndex=200;
-    move(x,y);
-  }
-  function move(x,y){
-    if(!moving)return;
-    el.style.left=(x-offX)+'px';
-    el.style.top=(y-offY)+'px';
-  }
-  function end(x,y){
-    if(!moving)return;moving=false;el.style.cursor='grab';
-    // проверяем попадание в свою зону
-    var zone=document.getElementById('zone_'+cloth.id);
-    var zr=zone.getBoundingClientRect();
-    if(x>=zr.left&&x<=zr.right&&y>=zr.top&&y<=zr.bottom){
-      // разместить точно в зоне
-      el.style.left=zr.left+'px';
-      el.style.top=zr.top+'px';
-      el.style.width=zr.width+'px';
-      el.style.height=zr.height+'px';
-      el.style.objectFit='contain';
-      zone.classList.add('filled');
-      zone.dataset.done='1';
-      el.dataset.placed='1';
-      el.onmousedown=null;el.ontouchstart=null; // зафиксировать
-      checkWin();
-    }else{
-      // вернуть в трей
-      el.style.position='static';el.style.zIndex='';
-      el.style.left='';el.style.top='';el.style.width='';el.style.height='';
-      document.getElementById('tray').appendChild(el);
-    }
-  }
-  el.onmousedown=function(e){e.preventDefault();start(e.clientX,e.clientY);};
-  document.addEventListener('mousemove',function(e){move(e.clientX,e.clientY);});
-  document.addEventListener('mouseup',function(e){end(e.clientX,e.clientY);});
-  el.ontouchstart=function(e){var t=e.touches[0];start(t.clientX,t.clientY);};
-  document.addEventListener('touchmove',function(e){if(moving){e.preventDefault();var t=e.touches[0];move(t.clientX,t.clientY);}},{passive:false});
-  document.addEventListener('touchend',function(e){var t=e.changedTouches[0];end(t.clientX,t.clientY);});
-}
+                <script>
+                    // Audio Synth (без внешних файлов)
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    function playSound(type) {
+                        if(audioCtx.state === 'suspended') audioCtx.resume();
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain); gain.connect(audioCtx.destination);
+                        
+                        if(type === 'win') {
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                            osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+                        } else {
+                            osc.type = 'sawtooth';
+                            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                        }
+                    }
 
-/* ==== ОКНО ЗАДАНИЯ ==== */
-function showTask(cloth){
-  currentCloth=cloth;
-  var box=document.getElementById('taskBox');
-  var html='<h2>'+cloth.name+'</h2>';
-  if(cloth.taskType==='imginput'&&cloth.taskImg){
-    html+='<img src="'+cloth.taskImg+'">';
-  }
-  html+='<p>'+cloth.question+'</p>';
-  if(cloth.taskType==='choice'){
-    cloth.answers.forEach(function(a,i){
-      html+='<button class="ans" onclick="answerChoice('+i+')">'+a+'</button>';
-    });
-  }else{
-    html+='<input class="txt" id="txtAns" placeholder="..."><br>';
-    html+='<button class="btn" onclick="answerInput()">'+tr.submit+'</button>';
-  }
-  html+='<div class="msg" id="taskMsg"></div>';
-  box.innerHTML=html;
-  document.getElementById('taskModal').style.display='flex';
-}
-function answerChoice(i){
-  var c=currentCloth;
-  if(i===c.correct){taskSuccess();}
-  else{document.getElementById('taskMsg').textContent=tr.wrong;document.getElementById('taskMsg').style.color='#ff6b6b';}
-}
-function answerInput(){
-  var c=currentCloth;
-  var val=document.getElementById('txtAns').value.trim().toLowerCase();
-  var right=(c.answers[0]||'').trim().toLowerCase();
-  if(val===right){taskSuccess();}
-  else{document.getElementById('taskMsg').textContent=tr.wrong;document.getElementById('taskMsg').style.color='#ff6b6b';}
-}
-function taskSuccess(){
-  var msg=document.getElementById('taskMsg');
-  msg.textContent=tr.correct;msg.style.color='#2ecc71';
-  solved[currentCloth.id]=true;
-  setTimeout(function(){
-    document.getElementById('taskModal').style.display='none';
-  },700);
-}
+                    // Game Logic Variables
+                    let questions = ${JSON.stringify(parsedQuestions)};
+                    let totalItems = ${gameData.items.length};
+                    let placedItems = 0;
+                    let curTime = ${time};
+                    let curLives = ${lives};
+                    let timerInt;
+                    let currentDragItem = null;
+                    let currentTargetQuestion = null;
+                    let startX, startY;
 
-/* ==== ПРОВЕРКА ПОБЕДЫ ==== */
-function checkWin(){
-  var allDone=DATA.clothes.every(function(c){
-    if(!c.img)return true;
-    var z=document.getElementById('zone_'+c.id);
-    return z&&z.dataset.done==='1';
-  });
-  if(allDone){ showEnd(true); }
-}
+                    function startGame() {
+                        if(audioCtx.state === 'suspended') audioCtx.resume();
+                        document.getElementById('startScreen').style.display = 'none';
+                        document.getElementById('gameUI').style.display = 'flex';
+                        document.getElementById('playArea').style.display = 'block';
+                        
+                        if(curTime > 0) {
+                            timerInt = setInterval(() => {
+                                curTime--;
+                                document.getElementById('timerTxt').innerText = curTime;
+                                if(curTime <= 0) gameOver(false);
+                            }, 1000);
+                        }
+                    }
 
-/* ==== ОКНО ПОБЕДЫ / ПОРАЖЕНИЯ ==== */
-function showEnd(win){
-  var box=document.getElementById('endBox');
-  var img=win?DATA.images.win:DATA.images.lose;
-  var text=win?tr.win:tr.lose;
-  var html='';
-  if(img){html+='<img src="'+img+'">';}
-  html+='<h2>'+text+'</h2>';
-  html+='<button class="btn" onclick="restart()">'+tr.restart+'</button>';
-  box.innerHTML=html;
-  document.getElementById('endModal').style.display='flex';
-}
-function restart(){
-  document.getElementById('endModal').style.display='none';
-  initGame();
-}
+                    function gameOver(isWin) {
+                        clearInterval(timerInt);
+                        document.getElementById('playArea').style.display = 'none';
+                        document.getElementById('gameUI').style.display = 'none';
+                        document.getElementById('endScreen').style.display = 'flex';
+                        document.getElementById('endTitle').innerText = isWin ? '${txtWin}' : 'ВРЕМЯ ИСТЕКЛО / ЖИЗНИ КОНЧИЛИСЬ';
+                        document.getElementById('endTitle').style.color = isWin ? '#00ff00' : '#ff3366';
+                        document.getElementById('endTitle').style.textShadow = isWin ? '0 0 20px #00ff00' : '0 0 20px #ff3366';
+                    }
 
-initGame();
-<\/script>
-</body></html>`;
-}
+                    // Управление Drag & Drop (мышь и тач)
+                    const items = document.querySelectorAll('.item');
+                    items.forEach(el => {
+                        el.addEventListener('pointerdown', (e) => {
+                            currentDragItem = el;
+                            startX = el.offsetLeft;
+                            startY = el.offsetTop;
+                            el.setPointerCapture(e.pointerId);
+                        });
+                        
+                        el.addEventListener('pointermove', (e) => {
+                            if(currentDragItem !== el) return;
+                            let newX = e.clientX - el.offsetWidth/2;
+                            let newY = e.clientY - el.offsetHeight/2;
+                            el.style.left = newX + 'px';
+                            el.style.top = newY + 'px';
+                        });
 
-/* ===================== РЕНДЕР ПРЕДПРОСМОТРА (без мерцания) ===================== */
-let renderTimer=null;
-function render(){
-  // применяем стиль к самому редактору
-  document.documentElement.style.setProperty('--bg',document.getElementById('c_bg').value);
-  document.documentElement.style.setProperty('--cyan',document.getElementById('c_cyan').value);
-  document.documentElement.style.setProperty('--purple',document.getElementById('c_purple').value);
-  document.documentElement.style.setProperty('--glow',document.getElementById('c_glow').value);
-  document.documentElement.style.setProperty('--font',document.getElementById('font').value);
+                        el.addEventListener('pointerup', (e) => {
+                            if(currentDragItem !== el) return;
+                            el.releasePointerCapture(e.pointerId);
+                            
+                            // Проверка коллизии с центром экрана (там стоит персонаж)
+                            const char = document.getElementById('baseChar');
+                            if(!char) { currentDragItem = null; return; }
+                            
+                            const cRect = char.getBoundingClientRect();
+                            const iRect = el.getBoundingClientRect();
+                            
+                            // Если предмет брошен поверх персонажа
+                            if(iRect.right > cRect.left && iRect.left < cRect.right && 
+                               iRect.bottom > cRect.top && iRect.top < cRect.bottom) {
+                                
+                                triggerQuestion(el);
+                            } else {
+                                // Возврат на старт
+                                el.style.left = startX + 'px';
+                                el.style.top = startY + 'px';
+                                currentDragItem = null;
+                            }
+                        });
+                    });
 
-  // debounce, чтобы не перерисовывать iframe слишком часто
-  clearTimeout(renderTimer);
-  renderTimer=setTimeout(updatePreview,150);
-}
-function updatePreview(){
-  const frame=document.getElementById('previewFrame');
-  const html=buildGameHTML();
-  // используем srcdoc — обновление без "белой вспышки"
-  const doc=frame.contentWindow.document;
-  doc.open();doc.write(html);doc.close();
-}
+                    function triggerQuestion(itemEl) {
+                        if(questions.length === 0) {
+                            // Если вопросы кончились - просто ставим
+                            successItem(itemEl);
+                            return;
+                        }
+                        
+                        // Берем случайный вопрос
+                        const qIdx = Math.floor(Math.random() * questions.length);
+                        currentTargetQuestion = questions[qIdx];
+                        
+                        document.getElementById('qText').innerHTML = currentTargetQuestion[0];
+                        const container = document.getElementById('ansContainer');
+                        container.innerHTML = '';
+                        document.getElementById('wrongMsg').style.display = 'none';
+                        
+                        // Если это текстовый ввод
+                        if(currentTargetQuestion.length === 2) {
+                            container.innerHTML = \`<input type="text" id="tInput" class="text-input" placeholder="Ваш ответ...">
+                                                   <button class="btn" style="width:100%" onclick="checkTextAns()">ОТВЕТИТЬ</button>\`;
+                        } else {
+                            // Мультивыбор
+                            let answers = currentTargetQuestion.slice(1);
+                            // Перемешиваем
+                            for (let i = answers.length - 1; i > 0; i--) {
+                                const j = Math.floor(Math.random() * (i + 1));
+                                [answers[i], answers[j]] = [answers[j], answers[i]];
+                            }
+                            answers.forEach(a => {
+                                container.innerHTML += \`<button class="ans-btn" onclick="checkBtnAns('\`+a+\`')">\`+a+\`</button>\`;
+                            });
+                        }
+                        
+                        document.getElementById('qModal').style.display = 'flex';
+                        if(window.MathJax) MathJax.typeset();
+                    }
 
-/* ===================== ТЕСТ-ДРАЙВ ===================== */
-function openTest(){
-  const html=buildGameHTML();
-  const w=window.open('','_blank');
-  w.document.open();w.document.write(html);w.document.close();
-}
+                    function checkTextAns() {
+                        const val = document.getElementById('tInput').value.trim().toLowerCase();
+                        const correct = currentTargetQuestion[1].trim().toLowerCase();
+                        if(val === correct) handleWin();
+                        else handleLose();
+                    }
+                    
+                    function checkBtnAns(val) {
+                        if(val === currentTargetQuestion[1]) handleWin();
+                        else handleLose();
+                    }
 
-/* ===================== КОПИРОВАНИЕ КОДА ===================== */
-function copyCode(){
-  const code=buildGameHTML();
-  navigator.clipboard.writeText(code).then(function(){
-    const btn=document.getElementById('copyBtn');
-    btn.textContent='✔ Скопировано';
-    btn.classList.add('copied');
-    setTimeout(function(){
-      btn.textContent='📋 Скопировать код';
-      btn.classList.remove('copied');
-    },2000);
-  }).catch(function(){
-    // запасной способ
-    const ta=document.createElement('textarea');
-    ta.value=code;document.body.appendChild(ta);ta.select();
-    document.execCommand('copy');ta.remove();
-    const btn=document.getElementById('copyBtn');
-    btn.textContent='✔ Скопировано';btn.classList.add('copied');
-    setTimeout(function(){btn.textContent='📋 Скопировать код';btn.classList.remove('copied');},2000);
-  });
-}
+                    function handleWin() {
+                        playSound('win');
+                        document.getElementById('qModal').style.display = 'none';
+                        successItem(currentDragItem);
+                    }
 
-/* ===================== СТАРТ ===================== */
-addCloth();  // один элемент по умолчанию
-render();
-</script>
+                    function handleLose() {
+                        playSound('lose');
+                        document.getElementById('wrongMsg').style.display = 'block';
+                        
+                        if(curLives > 0) {
+                            curLives--;
+                            document.getElementById('livesTxt').innerText = curLives;
+                            if(curLives <= 0) {
+                                document.getElementById('qModal').style.display = 'none';
+                                gameOver(false);
+                                return;
+                            }
+                        }
+                        
+                        setTimeout(() => {
+                            document.getElementById('qModal').style.display = 'none';
+                            currentDragItem.style.left = startX + 'px';
+                            currentDragItem.style.top = startY + 'px';
+                            currentDragItem = null;
+                        }, 1000);
+                    }
+
+                    function successItem(el) {
+                        el.style.pointerEvents = 'none';
+                        el.style.filter = 'drop-shadow(0 0 20px #00ff00)';
+                        el.style.zIndex = '5';
+                        currentDragItem = null;
+                        placedItems++;
+                        
+                        if(placedItems >= totalItems && totalItems > 0) {
+                            setTimeout(() => gameOver(true), 1000);
+                        }
+                    }
+                <\/script>
+            </body>
+            </html>`;
+        }
+
+        function updatePreview() {
+            const iframe = document.getElementById('game-preview');
+            // Используем srcdoc для рендеринга внутри редактора
+            iframe.srcdoc = getGameHTML();
+        }
+
+        function exportForGenially() {
+            const rawHTML = getGameHTML();
+            
+            // Заменяем кавычки для безопасной вставки в атрибут srcdoc
+            // Это самый надежный способ внедрить сложный код в Genially "Other/Другое"
+            const escapedHTML = rawHTML
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+
+            const finalIframe = `<iframe srcdoc="${escapedHTML}" width="100%" height="600px" frameborder="0" allowfullscreen></iframe>`;
+            
+            navigator.clipboard.writeText(finalIframe).then(() => {
+                const btn = document.getElementById('copyBtn');
+                btn.innerText = "СКОПИРОВАНО! ВСТАВЬТЕ В GENIALLY";
+                btn.style.background = "#00ff00";
+                setTimeout(() => {
+                    btn.innerText = "Скопировать код для Genially";
+                    btn.style.background = "var(--primary)";
+                }, 4000);
+            });
+        }
+
+        // Инициализация при старте
+        window.onload = updatePreview;
+    </script>
 </body>
 </html>
